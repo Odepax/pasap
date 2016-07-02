@@ -1,0 +1,34 @@
+{
+    "name": "odepax/pasap",
+    "description": "PHP as a Preprocessor --- Another server side custom tags lib.",
+    "type": "library",
+    "keywords": [ "custom-tag" ],
+    "require": {
+    	"php": "7.*.*",
+        "sgolemon/table-flip": "^1.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^5.4"
+    },
+    "autoload": {
+        "psr-4": { "Pasap\\": "source" }
+    },
+    "autoload-dev": {
+        "psr-4": { "Pasap\\Test\\": "test" }
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Odepax",
+            "email": "odepaxforuma@gmail.com",
+            "homepage": "https://github.com/Odepax",
+            "role": "Developer"
+        }
+    ],
+    "support": {
+        "email": "odepaxforuma@gmail.com",
+        "issues": "https://github.com/Odepax/pasap/issues",
+        "source": "https://github.com/Odepax/pasap"
+    },
+    "minimum-stability": "stable"
+}
