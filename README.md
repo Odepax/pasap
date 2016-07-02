@@ -110,6 +110,10 @@ This is HTML. This means the basic `<!DOCTYPE>` -- `<html>` -- `<head>` -- `<bod
 structure is still mandatory.
 Except these basics, you can create all the custom tags you want.
 
+**Limit 3.**
+Since the custom tags are managed server side, your CSS and your JavaScript are
+not aware of them.
+
 ## Functioning
 
 ![With and Without Pasap](http://aygix.free.fr/down.php?path=github/Odepax/pasap/with-without.png)
