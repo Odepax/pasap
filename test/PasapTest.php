@@ -112,10 +112,9 @@ class PasapTest extends TestCase
 	public function testParseSimplePasap ()        { $this->parseAndCompare("simple-pasap"); }
 	public function testParseSimplePasapWithPHP () { $this->parseAndCompare("simple-pasap-with-php"); }
 	public function testParseReadmeExample ()      { $this->parseAndCompare("readme-example"); }
-	// public function testParseCustomRootPasap () { $this->parseAndCompare("custom-root-pasap"); }
+	public function testParseCustomRootPasap ()    { $this->parseAndCompare("custom-root-pasap"); }
 	// public function testParseNestedPasap ()        { $this->parseAndCompare("nested-pasap"); }
 	// public function testParse ()                   { $this->parseAndCompare(""); }
 
-	// @TODO: Make testParseCustomRootPasap pass. Even the root element should be a custom one.
 	// @TODO: Make testParseNestedPasap pass. Less important. Allow usage of custom tags in definition files.
 }

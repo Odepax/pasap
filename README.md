@@ -11,24 +11,36 @@ Custom tags are used to improve code readability and make the HTML more meaningf
 Create a classic PHP file. This file is supposed to generate HTML, with the only
 difference that there are custom tags in the generated HTML code.
 
-```php
+```xml
 <!DOCTYPE html>
+<document title="I'm Using Custom Tags!">
+	<news title="Lorem Ipsum" author="Me, of course">
+		<p>Lorem ipsum <em>dolor</em> sit amet...</p>
+	</news>
+</document>
+```
+
+Remark: `<html>` -- `<head>` -- `<body>` structure is not mandatory: you can
+create a custom tag and use it as the root element of you document instead of
+`<html>`.
+
+**STEP 2.**
+Create a definition file for each custom tag you used. Here, you will create a
+`custom-tags/document.php` file:
+
+```php
 <html lang="en">
 	<head>
 		<meta charset="UTF-8"/>
-		<title>I'm Using Custom Tags!</title>
+		<title><?= $this->attr("title") ?></title>
 	</head>
 	<body>
-		<news title="Lorem Ipsum" author="Me, of course">
-			<p>Lorem ipsum <em>dolor</em> sit amet...</p>
-		</news>
+		<?= $this->children() ?>
 	</body>
 </html>
 ```
 
-**STEP 2.**
-Create a definition file for each custom tag you used. Here, you will create a
-`custom-tags/news.php` file:
+... and a `custom-tags/news.php` file:
 
 ```php
 <article class="news">
@@ -99,6 +111,9 @@ iterate through them with a `foreach($this->attr() as $name => $value)` and a
 Note that, like `$this`, `$element` is a `\Pasap\Element`, which means you can
 call `tag`, `is`, `attr`, and `children` methods on it.
 
+You can find detailed information about exposed objects and methods on the
+[wiki](https://github.com/Odepax/pasap/wiki).
+
 ## Limitations
 
 **Limit 1.**
@@ -106,9 +121,19 @@ You can't use custom tags in a definition file.
 However, it's still possible to use a custom tag as a child of another custom tag.
 
 **Limit 2.**
-This is HTML. This means the basic `<!DOCTYPE>` -- `<html>` -- `<head>` -- `<body>`
-structure is still mandatory.
-Except these basics, you can create all the custom tags you want.
+This is XML, not HTML.
+It means that even this is a valid **HTML5** code:
+
+```html
+<head>
+    <meta charset="UTF-8">
+    <title>...</title>
+</head>
+```
+
+... this is not a valid **XML** code since XML is more strict about self-closing
+tags: they must end with `/>`, so you' will need to turn your `<meta>` and
+`<input>` into `<meta/>` and `<input/>`.
 
 **Limit 3.**
 Since the custom tags are managed server side, your CSS and your JavaScript are

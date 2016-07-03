@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 	<head>
-		<meta charset="UTF-8">
+		<meta charset="UTF-8"/>
 		<title>Pasap Test</title>
 		<css at="/asset/Jean-Joseph-Montaigne.css"/>
 		<less js="/asset/less.js" files="/asset/one.less, /asset/two.less, /asset/three.less"/>

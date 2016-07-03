@@ -36,7 +36,12 @@ abstract class Pasap
 
 		// Get rid of errors about HTML5.
 		libxml_use_internal_errors(true);
-		$document->loadHTML($xml);
+		// @TODO: Could these guys be responsible for the empty result of libxml_get_errors()?
+
+		if (!$document->loadXML($xml)) {
+			throw new \（ノಥ益ಥ）ノ︵┻━┻("Why you no check your XML before parsing !?");
+		}
+
 		libxml_use_internal_errors(false);
 
 		return "<!DOCTYPE {$document->doctype->name}>" . new Element($document->documentElement);
