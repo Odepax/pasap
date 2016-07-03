@@ -26,6 +26,14 @@ class ElementBasicTest extends BasicTest
 		new Element(new \DOMText());
 	}
 
+	public function testConstructorWithDOMComment ()
+	{
+		new Element(new \DOMComment("Why you no throw exception."));
+		new Element(new \DOMComment("   \n    "));
+		new Element(new \DOMComment(""));
+		new Element(new \DOMComment());
+	}
+
 	public function testConstructorWithString ()
 	{
 		new Element("Why you no throw exception.");

@@ -4,7 +4,7 @@ namespace Pasap;
 
 class Element
 {
-	/** @var \DOMElement|\DOMText The DOM element behind this interface. */
+	/** @var \DOMElement|\DOMText|\DOMComment The DOM element behind this interface. */
 	protected $source = null;
 
 	/** @var AttrCollection Caching for this element's attribute collection. */
@@ -44,12 +44,12 @@ class Element
 	 * This class provides an interface to native DOM elements, handling DOM
 	 * elements and DOM text nodes.
 	 *
-	 * @param \DOMElement|\DOMText|\string $source
+	 * @param \DOMElement|\DOMText|\DOMComment|\string $source
 	 * The DOM element behind this interface.
 	 */
 	public function __construct ($source)
 	{
-		if ($source instanceof \DOMElement || $source instanceof \DOMText) {
+		if ($source instanceof \DOMElement || $source instanceof \DOMText || $source instanceof \DOMComment) {
 			$this->source = $source;
 		} else if (is_string($source)) {
 			$this->source = new \DOMText($source);
@@ -68,10 +68,17 @@ class Element
 	 */
 	public function __toString ()
 	{
+		// Text node.
 		if ($this->source instanceof \DOMText) {
 			return $this->source->nodeValue;
 		}
 
+		// Comment.
+		if ($this->source instanceof \DOMComment) {
+			return "<!-- {$this->source->nodeValue} -->";
+		}
+
+		// Element.
 		if (is_null($definitionFile = Pasap::definitionFilePath($this->tag()))) {
 			// This is a native element. Just left it as this.
 
@@ -99,6 +106,7 @@ class Element
 	 * @return string
 	 * Returns "a" for a `<a>`, "li" for a `<li>`, etc...
 	 * Returns "#text" for text nodes.
+	 * Returns "#comment" for comments.
 	 */
 	public function tag ()
 	{
@@ -112,6 +120,8 @@ class Element
 	 * The tag name to test against.
 	 * If the parameter is set to `"#text"`, this method will indicate if this
 	 * element is a text node or not.
+	 * If the parameter is set to `"#comment"`, this method will indicate if this
+	 * element is a comment or not.
 	 * If the parameter is set to `"#orphan"`, this method will indicate if this
 	 * element an orphan tag (like `<br/>`, or `<img/>`).
 	 *
@@ -153,7 +163,7 @@ class Element
 	 */
 	public function attr ($key = null)
 	{
-		if ($this->source instanceof \DOMText) {
+		if ($this->source instanceof \DOMText || $this->source instanceof \DOMComment) {
 			return null;
 		}
 
