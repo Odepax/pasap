@@ -85,7 +85,13 @@ class Element
 			// Put a space before a non-empty list of attributes.
 			$attr = empty($attr = $this->attr()->__toString()) ? "" : " " . $attr;
 
-			if ($this->is("#orphan")) {
+			// Special self-closing HTML tags treatment.
+			// See https://developer.mozilla.org/en-US/docs/Glossary/Empty_element
+			if (in_array($this->tag(), [
+				"area", "base", "br", "col", "colgroup", "command", "embed",
+				"hr", "img", "input", "keygen", "link", "meta", "param",
+				"source", "track", "wbr"
+			], true)) {
 				return "<{$this->tag()}{$attr}/>";
 			} else {
 				return "<{$this->tag()}{$attr}>{$this->children()}</{$this->tag()}>";
@@ -122,28 +128,15 @@ class Element
 	 * element is a text node or not.
 	 * If the parameter is set to `"#comment"`, this method will indicate if this
 	 * element is a comment or not.
-	 * If the parameter is set to `"#orphan"`, this method will indicate if this
-	 * element an orphan tag (like `<br/>`, or `<img/>`).
 	 *
 	 * @return bool
 	 * Returns `$this->tag() === $tag` exactly.
 	 *
 	 * @see Element::tag()
 	 * This is a shortcut to perform a test on the `tag` method's return value.
-	 *
-	 * @see https://developer.mozilla.org/en-US/docs/Glossary/Empty_element
-	 * Empty element. These elements make `is("#orphan")` return `TRUE`.
 	 */
 	public function is (string $tag)
 	{
-		if($tag === "#orphan") {
-			return in_array($this->tag(), [
-			    "area", "base", "br", "col", "colgroup", "command", "embed",
-			    "hr", "img", "input", "keygen", "link", "meta", "param",
-				"source", "track", "wbr"
-			], true);
-		}
-
 		return $this->tag() === $tag;
 	}
 
