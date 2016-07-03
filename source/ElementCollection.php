@@ -21,6 +21,8 @@ class ElementCollection implements \Iterator
 	 *
 	 * @param \DOMNodeList $source
 	 * The list which contains the elements.
+	 *
+	 * @since 0.0.0
 	 */
 	public function __construct ($source)
 	{
@@ -35,7 +37,9 @@ class ElementCollection implements \Iterator
 	 * Gets a string which represents the xml children in this collection.
 	 *
 	 * @return string
+	 *
 	 * @link http://php.net/manual/en/language.oop5.magic.php#language.oop5.magic.tostring
+	 * @since 0.0.0
 	 */
 	function __toString ()
 	{

@@ -46,6 +46,8 @@ class Element
 	 *
 	 * @param \DOMElement|\DOMText|\DOMComment|\string $source
 	 * The DOM element behind this interface.
+	 *
+	 * @since 0.0.0
 	 */
 	public function __construct ($source)
 	{
@@ -65,6 +67,7 @@ class Element
 	 * This element, once parsed, recursively.
 	 *
 	 * @link http://php.net/manual/en/language.oop5.magic.php#language.oop5.magic.tostring
+	 * @since 0.0.0
 	 */
 	public function __toString ()
 	{
@@ -113,6 +116,8 @@ class Element
 	 * Returns "a" for a `<a>`, "li" for a `<li>`, etc...
 	 * Returns "#text" for text nodes.
 	 * Returns "#comment" for comments.
+	 *
+	 * @since 0.0.0
 	 */
 	public function tag ()
 	{
@@ -134,6 +139,9 @@ class Element
 	 *
 	 * @see Element::tag()
 	 * This is a shortcut to perform a test on the `tag` method's return value.
+	 *
+	 * @since 0.1.0 `$this->is("#orphan")` is not functional anymore.
+	 * @since 0.0.0
 	 */
 	public function is (string $tag)
 	{
@@ -147,12 +155,14 @@ class Element
 	 * The name of the attribute to seek.
 	 *
 	 * @return AttrCollection|string|null
-	 * Returns `NULL` if this element is a text node since text nodes don't have
-	 * any attribute.
+	 * Returns `NULL` if this element is a text node or a comment since they
+	 * don't have any attribute.
 	 * Returns an attribute collection if the parameter is NULL.
 	 * Returns `NULL` if the attribute does not exist.
 	 * Returns the value of the requested attribute as a string, which might be
 	 * empty.
+	 *
+	 * @since 0.0.0
 	 */
 	public function attr ($key = null)
 	{
@@ -182,6 +192,8 @@ class Element
 	 * Returns `NULL` if this element is a text node since text nodes don't have
 	 * any child.
 	 * Returns an element collection otherwise.
+	 *
+	 * @since 0.0.0
 	 */
 	public function children ()
 	{

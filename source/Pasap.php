@@ -25,6 +25,8 @@ abstract class Pasap
 	 *
 	 * @return string
 	 * A string. It's supposed to be HTML.
+	 *
+	 * @since 0.0.0
 	 */
 	public static function parse (string $xml, string $elementDefinitionsFolder): string
 	{
@@ -53,6 +55,8 @@ abstract class Pasap
 	 * element is considered as a custom element and must be parsed.
 	 * Returns `NULL` if the file does not exist, meaning the element is
 	 * considered as a native HTML element and must be left as this.
+	 *
+	 * @since 0.0.0
 	 */
 	public static function definitionFilePath (string $elementTag)
 	{

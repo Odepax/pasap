@@ -24,6 +24,8 @@ class AttrCollection implements \Iterator
 	 *
 	 * @param \DOMNamedNodeMap $source
 	 * The map which contains the attributes.
+	 *
+	 * @since 0.0.0
 	 */
 	public function __construct ($source)
 	{
@@ -41,6 +43,7 @@ class AttrCollection implements \Iterator
 	 * A string representing all the `attr="value"`.
 	 *
 	 * @link http://php.net/manual/en/language.oop5.magic.php#language.oop5.magic.tostring
+	 * @since 0.0.0
 	 */
 	function __toString ()
 	{
