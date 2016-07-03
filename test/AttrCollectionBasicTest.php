@@ -76,15 +76,6 @@ class AttrCollectionTest extends BasicTest
 		]);
 	}
 
-	public function testToString ()
-	{
-		$this->assertEquals("href=\"http://gihub.com\" class=\"button\"", (new AttrCollection(static::$a->attributes))->__toString());
-		$this->assertEquals("class=\"news_content\"", (new AttrCollection(static::$article->attributes))->__toString());
-		$this->assertEquals("", (new AttrCollection(static::$body->attributes))->__toString());
-		$this->assertEquals("wow=\"amaze\" such=\"custom tag\"", (new AttrCollection(static::$doge->attributes))->__toString());
-		$this->assertEquals("title=\"This is a Revolution\" created=\"12-12-12\"", (new AttrCollection(static::$news->attributes))->__toString());
-	}
-
 	public function testEcho ()
 	{
 		$this->expectOutputString(""
@@ -132,5 +123,42 @@ class AttrCollectionTest extends BasicTest
 		foreach (new AttrCollection(static::$news->attributes) as $k => $v) {
 			if ($k !== "wow") echo "$k => $v\n";
 		}
+	}
+
+	public function testLock ()
+	{
+		$this->expectOutputString(""
+			. "class=\"button\"\n"
+			. "class=\"news_content\"\n"
+			. "\n"
+			. "\n"
+			. "title=\"This is a Revolution\" created=\"12-12-12\"\n"
+		);
+
+		echo (new AttrCollection(static::$a->attributes))->but("href") . "\n";
+		echo (new AttrCollection(static::$article->attributes)) . "\n";
+		echo (new AttrCollection(static::$body->attributes)) . "\n";
+		echo (new AttrCollection(static::$doge->attributes))->but("wow", "such") . "\n";
+		echo (new AttrCollection(static::$news->attributes)) . "\n";
+	}
+
+	public function testUnlock ()
+	{
+		$this->expectOutputString(""
+			. "title=\"This is a Revolution\" created=\"12-12-12\"\n"
+			. "title=\"This is a Revolution\"\n"
+			. "title=\"This is a Revolution\"\n"
+			. "title=\"This is a Revolution\" created=\"12-12-12\"\n"
+		);
+
+		$attrCollection = new AttrCollection(static::$news->attributes);
+
+		echo $attrCollection . "\n";
+		echo $attrCollection->but("created") . "\n";
+		echo $attrCollection . "\n";
+
+		$attrCollection->unlock("created");
+
+		echo $attrCollection . "\n";
 	}
 }
