@@ -5,7 +5,7 @@ namespace Pasap;
 class AttrCollection implements \Iterator
 {
 	/** @var array The list of the Pasap attributes that must not appear in the `echo` ans `foreach` operation. */
-	protected static $pasapReservedAttributes = [ "pasap:ns", "pasap:data" ];
+	protected static $pasapReservedAttributes = [ "pasap:ns", "pasap:data", "pasap:scope" ];
 
 	/** @var \DOMNamedNodeMap The map which contains the attributes. */
 	protected $source = null;

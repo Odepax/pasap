@@ -98,6 +98,27 @@ abstract class Pasap
 	}
 
 	/**
+	 * Initializes, registers and saves a data scope and returns it's ID.
+	 *
+	 * @param array $data
+	 * The `string => mixed` array that is used to initialize the data scope.
+	 *
+	 * @return string
+	 * Returns the code of the `pasap:scope` attribute that contains th ID of the
+	 * created data scope. Ready to be `echo`!
+	 *
+	 * @since 1.3.0
+	 */
+	public static function scope (array $data): string
+	{
+		$id = uniqid("pspscp" . rand());
+
+		static::$dataSet[$id] = $data;
+
+		return "pasap:scope=\"$id\"";
+	}
+
+	/**
 	 * Used by elements to retrieve a data set.
 	 *
 	 * @param string $id

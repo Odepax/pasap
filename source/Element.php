@@ -46,6 +46,9 @@ class Element
 	/** @var array The data set of this element. */
 	protected $dataSet = null;
 
+	/** @var array The data scope of this element. */
+	protected $dataScope = null;
+
 	/** @var Element The parent of this element. */
 	protected $parent = null;
 
@@ -90,6 +93,23 @@ class Element
 		}
 
 		return $this->dataSet;
+	}
+
+	/**
+	 * Retrieves, caches and returns this element's data scope.
+	 * @return array
+	 */
+	protected function getDataScope ()
+	{
+		if (is_null($this->dataScope)) {
+			if (is_null($this->attr('pasap:scope'))) {
+				$this->dataScope = [];
+			} else {
+				$this->dataScope = Pasap::getDataSet($this->attr('pasap:scope'));
+			}
+		}
+
+		return $this->dataScope;
 	}
 
 	/**
@@ -337,6 +357,35 @@ class Element
 			return $data[$key];
 		} else {
 			return null;
+		}
+	}
+
+	/**
+	 * Gets the value behind a key of this element's data scope.
+	 *
+	 * @param mixed $key
+	 * The key of the item to look for.
+	 *
+	 * @return mixed
+	 * Returns the value of the requested key.
+	 * Returns `NULL` if the key does not exist.
+	 *
+	 * @since 1.3.0
+	 */
+	public function scope ($key)
+	{
+		if (array_key_exists($key, $data = $this->getDataScope())) {
+			// Case 1: it's in our scope. Great, return it.
+			return $data[$key];
+		} else {
+			// Case 2. it's not in the scope, but don't give up, it's maybe in the parent's one.
+			if (is_null($this->parent())) {
+				// Ok, give up this shit.
+				return null;
+			} else {
+				// See? Our parents will always be here for us!
+				return $this->parent()->scope($key);
+			}
 		}
 	}
 
