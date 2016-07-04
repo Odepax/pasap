@@ -27,6 +27,9 @@ abstract class BasicTest extends TestCase
 	/** @var \DOMElement A native element (`news` tag) used for testing. */
 	protected static $news;
 
+	/** @var \DOMElement A native element (`pasap` tag) used for testing. */
+	protected static $pasap;
+
 	/** Ah, look at all those static variables... */
 	public static function setUpBeforeClass ()
 	{
@@ -48,6 +51,11 @@ abstract class BasicTest extends TestCase
 		static::$news = static::$document->createElement("news");
 		static::$news->appendChild(new \DOMAttr("title", "This is a Revolution"));
 		static::$news->appendChild(new \DOMAttr("created", "12-12-12"));
+
+		static::$pasap = static::$document->createElement("pasap");
+		static::$pasap->appendChild(new \DOMAttr("pasap:ns", "wow:amaze"));
+		static::$pasap->appendChild(new \DOMAttr("class", "pasap_testing"));
+		static::$pasap->appendChild(new \DOMAttr("pasap:data", "oizeasgthq"));
 
 		static::$body->appendChild(static::$article);
 		static::$article->appendChild(new \DOMText("Click here: "));

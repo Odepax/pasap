@@ -4,6 +4,9 @@ namespace Pasap;
 
 class AttrCollection implements \Iterator
 {
+	/** @var array The list of the Pasap attributes that must not appear in the `echo` ans `foreach` operation. */
+	protected static $pasapReservedAttributes = [ "pasap:ns", "pasap:data" ];
+
 	/** @var \DOMNamedNodeMap The map which contains the attributes. */
 	protected $source = null;
 
@@ -50,7 +53,7 @@ class AttrCollection implements \Iterator
 		$output = "";
 
 		foreach ($this->source as $attr) {
-			if (!array_key_exists($attr->name, $this->locked) && $attr->name !== "pasap:ns") {
+			if (!array_key_exists($attr->name, $this->locked) && !in_array($attr->name, static::$pasapReservedAttributes)) {
 				$output .= " {$attr->name}=\"{$attr->value}\"";
 			}
 		}
@@ -122,7 +125,7 @@ class AttrCollection implements \Iterator
 	{
 		// Let's look for the first position that is not locked.
 		for($this->iteratorIndex = 0; $this->valid(); ++$this->iteratorIndex) {
-			if (!array_key_exists($this->key(), $this->locked) && $this->key() !== "pasap:ns") {
+			if (!array_key_exists($this->key(), $this->locked) && !in_array($this->key(), static::$pasapReservedAttributes)) {
 				break;
 			}
 		}
@@ -138,7 +141,7 @@ class AttrCollection implements \Iterator
 	{
 		// Let's look for the newt position that is not locked.
 		for(++$this->iteratorIndex; $this->valid(); ++$this->iteratorIndex) {
-			if (!array_key_exists($this->key(), $this->locked) && $this->key() !== "pasap:ns") {
+			if (!array_key_exists($this->key(), $this->locked) && !in_array($this->key(), static::$pasapReservedAttributes)) {
 				break;
 			}
 		}

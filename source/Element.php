@@ -43,6 +43,9 @@ class Element
 	/** @var ElementCollection Caching for this element's children collection. */
 	protected $childrenCollection = null;
 
+	/** @var array The data set of this element. */
+	protected $dataSet = null;
+
 	/**
 	 * Creates, caches and returns this element's attribute collection.
 	 * @return AttrCollection
@@ -67,6 +70,19 @@ class Element
 		}
 
 		return $this->childrenCollection;
+	}
+
+	/**
+	 * Creates, caches and returns this element's attribute collection.
+	 * @return array
+	 */
+	protected function getDataSet ()
+	{
+		if (is_null($this->dataSet)) {
+			$this->dataSet = Pasap::getDataSet($this->attr('pasap:data'));
+		}
+
+		return $this->dataSet;
 	}
 
 	/**
@@ -281,6 +297,27 @@ class Element
 			return null;
 		} else {
 			return $this->getChildrenCollection();
+		}
+	}
+
+	/**
+	 * Gets the value behind a key of this element's data set.
+	 *
+	 * @param mixed $key
+	 * The key of the item to look for.
+	 *
+	 * @return mixed
+	 * Returns the value of the requested key.
+	 * Returns `NULL` if the key does not exist.
+	 *
+	 * @since 1.2.0
+	 */
+	public function data ($key)
+	{
+		if (array_key_exists($key, $data = $this->getDataSet())) {
+			return $data[$key];
+		} else {
+			return null;
 		}
 	}
 }

@@ -84,6 +84,7 @@ class AttrCollectionTest extends BasicTest
 			. "\n"
 			. "wow=\"amaze\" such=\"custom tag\"\n"
 			. "title=\"This is a Revolution\" created=\"12-12-12\"\n"
+			. "class=\"pasap_testing\"\n"
 		);
 
 		echo new AttrCollection(static::$a->attributes) . "\n";
@@ -91,6 +92,7 @@ class AttrCollectionTest extends BasicTest
 		echo new AttrCollection(static::$body->attributes) . "\n";
 		echo new AttrCollection(static::$doge->attributes) . "\n";
 		echo new AttrCollection(static::$news->attributes) . "\n";
+		echo new AttrCollection(static::$pasap->attributes) . "\n";
 	}
 
 	public function testForeach ()
@@ -102,6 +104,7 @@ class AttrCollectionTest extends BasicTest
 			. "such => custom tag\n"
 			. "title => This is a Revolution\n"
 			. "created => 12-12-12\n"
+			. "class => pasap_testing\n"
 		);
 
 		foreach (new AttrCollection(static::$a->attributes) as $k => $v) {
@@ -121,6 +124,10 @@ class AttrCollectionTest extends BasicTest
 		}
 
 		foreach (new AttrCollection(static::$news->attributes) as $k => $v) {
+			if ($k !== "wow") echo "$k => $v\n";
+		}
+
+		foreach (new AttrCollection(static::$pasap->attributes) as $k => $v) {
 			if ($k !== "wow") echo "$k => $v\n";
 		}
 	}
