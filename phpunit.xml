@@ -5,4 +5,12 @@
 			<directory>./test</directory>
 		</testsuite>
 	</testsuites>
+	<filter>
+		<whitelist processUncoveredFilesFromWhitelist="true">
+			<directory suffix=".php">./source</directory>
+		</whitelist>
+	</filter>
+	<logging>
+		<log type="coverage-html" target="../temp/phpunit-coverage" lowUpperBound="40" highLowerBound="80"/>
+	</logging>
 </phpunit>
