@@ -10,6 +10,9 @@ class ElementCollection implements \Iterator
 	/** @var int This value is used in the implementation of the \Iterator interface. */
 	protected $iteratorIndex = 0;
 
+	/** @var Element The parent of the children contained in this collection. */
+	protected $origin = null;
+
 	/**
 	 * ElementCollection constructor.
 	 * This class provides a way to iterate over the children of a xml tag
@@ -22,15 +25,20 @@ class ElementCollection implements \Iterator
 	 * @param \DOMNodeList $source
 	 * The list which contains the elements.
 	 *
+	 * @param Element $origin
+	 * The element these children are children of.
+	 *
 	 * @since 0.0.0
 	 */
-	public function __construct ($source)
+	public function __construct ($source, Element $origin)
 	{
 		if ($source instanceof \DOMNodeList) {
 			$this->source = $source;
 		} else {
 			throw new \（ノಥ益ಥ）ノ︵┻━┻("Why you no provide the right arg type (DOMNodeList) !?");
 		}
+
+		$this->origin = $origin;
 	}
 
 	/**
@@ -108,7 +116,7 @@ class ElementCollection implements \Iterator
 		$node = $this->source->item($this->iteratorIndex);
 
 		if ($node instanceof \DOMElement || $node instanceof \DOMText) {
-			return new Element($node);
+			return new Element($node, $this->origin);
 		}
 
 		throw new \（ノ゜Д゜）ノ︵┻━┻("How u wanna me build an element with that (" . get_class($node) . ") !?");

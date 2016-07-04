@@ -46,6 +46,9 @@ class Element
 	/** @var array The data set of this element. */
 	protected $dataSet = null;
 
+	/** @var Element The parent of this element. */
+	protected $parent = null;
+
 	/**
 	 * Creates, caches and returns this element's attribute collection.
 	 * @return AttrCollection
@@ -66,7 +69,7 @@ class Element
 	protected function getChildrenCollection ()
 	{
 		if (is_null($this->childrenCollection)) {
-			$this->childrenCollection = new ElementCollection($this->source->childNodes);
+			$this->childrenCollection = new ElementCollection($this->source->childNodes, $this);
 		}
 
 		return $this->childrenCollection;
@@ -97,9 +100,13 @@ class Element
 	 * @param \DOMElement|\DOMText|\DOMComment|\string $source
 	 * The DOM element behind this interface.
 	 *
+	 * @param Element|null $parent
+	 * The parent of this element.
+	 *
+	 * @since 1.3.0 New parameter: `$parent`.
 	 * @since 0.0.0
 	 */
-	public function __construct ($source)
+	public function __construct ($source, $parent = null)
 	{
 		if ($source instanceof \DOMElement || $source instanceof \DOMText || $source instanceof \DOMComment) {
 			$this->source = $source;
@@ -107,6 +114,14 @@ class Element
 			$this->source = new \DOMText($source);
 		} else {
 			throw new \（ノಥ益ಥ）ノ︵┻━┻("Why you no provide the right arg type (DOMElement|DOMText|string) !?");
+		}
+
+		if (!is_null($parent)) {
+			if ($parent instanceof Element) {
+				$this->parent = $parent;
+			} else {
+				throw new \（ノಥ益ಥ）ノ︵┻━┻("Why you no provide the right parent type (Element) !?");
+			}
 		}
 	}
 
@@ -323,5 +338,20 @@ class Element
 		} else {
 			return null;
 		}
+	}
+
+	/**
+	 * Gets the parent of this element.
+	 *
+	 * @return Element|null
+	 * Returns an element which is the parent of this one in the DOM tree.
+	 * Returns `NULL` when this element is the root element of the considered
+	 * document or if no parent is provided.
+	 *
+	 * @since 1.3.0
+	 */
+	public function parent ()
+	{
+		return $this->parent;
 	}
 }

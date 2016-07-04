@@ -187,13 +187,13 @@ class ElementBasicTest extends BasicTest
 
 	public function testChildren ()
 	{
-		$this->assertInstanceOf(ElementCollection::class, (new Element(static::$a))->children());
-		$this->assertInstanceOf(ElementCollection::class, (new Element(static::$a))->children());
-		$this->assertInstanceOf(ElementCollection::class, (new Element(static::$article))->children());
-		$this->assertInstanceOf(ElementCollection::class, (new Element(static::$doge))->children());
-		$this->assertInstanceOf(ElementCollection::class, (new Element(static::$doge))->children());
-		$this->assertInstanceOf(ElementCollection::class, (new Element(static::$news))->children());
-		$this->assertInstanceOf(ElementCollection::class, (new Element(static::$news))->children());
+		$this->assertInstanceOf(ElementCollection::class, (new Element(static::$a))->children(), new Element(static::$pasap));
+		$this->assertInstanceOf(ElementCollection::class, (new Element(static::$a))->children(), new Element(static::$pasap));
+		$this->assertInstanceOf(ElementCollection::class, (new Element(static::$article))->children(), new Element(static::$pasap));
+		$this->assertInstanceOf(ElementCollection::class, (new Element(static::$doge))->children(), new Element(static::$pasap));
+		$this->assertInstanceOf(ElementCollection::class, (new Element(static::$doge))->children(), new Element(static::$pasap));
+		$this->assertInstanceOf(ElementCollection::class, (new Element(static::$news))->children(), new Element(static::$pasap));
+		$this->assertInstanceOf(ElementCollection::class, (new Element(static::$news))->children(), new Element(static::$pasap));
 
 		$this->assertNull((new Element(new \DOMText("Why you no throw exception.")))->children());
 		$this->assertNull((new Element(new \DOMText("   \n    ")))->children());
@@ -202,5 +202,23 @@ class ElementBasicTest extends BasicTest
 		$this->assertNull((new Element("Why you no throw exception."))->children());
 		$this->assertNull((new Element("   \n    "))->children());
 		$this->assertNull((new Element(""))->children());
+	}
+
+	public function testParent ()
+	{
+		$this->assertInstanceOf(Element::class, (new Element(static::$a, new Element(static::$pasap)))->parent());
+		$this->assertInstanceOf(Element::class, (new Element(static::$body, new Element(static::$pasap)))->parent());
+		$this->assertInstanceOf(Element::class, (new Element(static::$news, new Element(static::$pasap)))->parent());
+		$this->assertInstanceOf(Element::class, (new Element(new \DOMText("Why you no throw exception."), new Element(static::$pasap)))->parent());
+		$this->assertInstanceOf(Element::class, (new Element(new \DOMText(), new Element(static::$pasap)))->parent());
+		$this->assertInstanceOf(Element::class, (new Element(new \DOMComment("   \n    "), new Element(static::$pasap)))->parent());
+		$this->assertInstanceOf(Element::class, (new Element(new \DOMComment(""), new Element(static::$pasap)))->parent());
+
+		$this->assertNull((new Element(static::$article))->parent());
+		$this->assertNull((new Element(static::$doge))->parent());
+		$this->assertNull((new Element(new \DOMText("   \n    ")))->parent());
+		$this->assertNull((new Element(new \DOMText("")))->parent());
+		$this->assertNull((new Element(new \DOMComment("Why you no throw exception.")))->parent());
+		$this->assertNull((new Element(new \DOMComment()))->parent());
 	}
 }

@@ -9,60 +9,60 @@ class ElementCollectionTest extends BasicTest
 {
 	public function testConstructorWithDOMNodeList ()
 	{
-		new ElementCollection(static::$a->childNodes);
-		new ElementCollection(static::$article->childNodes);
-		new ElementCollection(static::$body->childNodes);
-		new ElementCollection(static::$doge->childNodes);
-		new ElementCollection(static::$news->childNodes);
+		new ElementCollection(static::$a->childNodes, new Element(static::$pasap));
+		new ElementCollection(static::$article->childNodes, new Element(static::$pasap));
+		new ElementCollection(static::$body->childNodes, new Element(static::$pasap));
+		new ElementCollection(static::$doge->childNodes, new Element(static::$pasap));
+		new ElementCollection(static::$news->childNodes, new Element(static::$pasap));
 	}
 
 	public function testConstructorWithDOMElement ()
 	{
 		$this->expectException(\（ノಥ益ಥ）ノ︵┻━┻::class);
 
-		new ElementCollection(static::$article);
+		new ElementCollection(static::$article, new Element(static::$pasap));
 	}
 
 	public function testConstructorWithDOMText ()
 	{
 		$this->expectException(\（ノಥ益ಥ）ノ︵┻━┻::class);
 
-		new ElementCollection(new \DOMText("Hi all"));
+		new ElementCollection(new \DOMText("Hi all"), new Element(static::$pasap));
 	}
 
 	public function testConstructorWithString ()
 	{
 		$this->expectException(\（ノಥ益ಥ）ノ︵┻━┻::class);
 
-		new ElementCollection("<a href=\"http://github.com\">...</a>");
+		new ElementCollection("<a href=\"http://github.com\">...</a>", new Element(static::$pasap));
 	}
 
 	public function testConstructorWithDOMNode ()
 	{
 		$this->expectException(\（ノಥ益ಥ）ノ︵┻━┻::class);
 
-		new ElementCollection(new \DOMNode());
+		new ElementCollection(new \DOMNode(), new Element(static::$pasap));
 	}
 
 	public function testConstructorWithDOMDocumentType ()
 	{
 		$this->expectException(\（ノಥ益ಥ）ノ︵┻━┻::class);
 
-		new ElementCollection(new \DOMDocumentType());
+		new ElementCollection(new \DOMDocumentType(), new Element(static::$pasap));
 	}
 
 	public function testConstructorWithStdClass ()
 	{
 		$this->expectException(\（ノಥ益ಥ）ノ︵┻━┻::class);
 
-		new ElementCollection(new \stdClass());
+		new ElementCollection(new \stdClass(), new Element(static::$pasap));
 	}
 
 	public function testConstructorWithPasapElement ()
 	{
 		$this->expectException(\（ノಥ益ಥ）ノ︵┻━┻::class);
 
-		new ElementCollection(new Element(static::$doge));
+		new ElementCollection(new Element(static::$doge), new Element(static::$pasap));
 	}
 
 	public function testConstructorWithArray ()
@@ -71,7 +71,7 @@ class ElementCollectionTest extends BasicTest
 
 		new ElementCollection([
 			12, "Hi all", new \DOMAttr("class", "button-active")
-		]);
+		], new Element(static::$pasap));
 	}
 
 	public function testForeach ()
@@ -84,23 +84,23 @@ class ElementCollectionTest extends BasicTest
 			. "<doge wow=\"amaze\" such=\"custom tag\"></doge>\n"
 		);
 
-		foreach (new ElementCollection(static::$a->childNodes) as $element) {
+		foreach (new ElementCollection(static::$a->childNodes, new Element(static::$pasap)) as $element) {
 			echo "$element\n";
 		}
 
-		foreach (new ElementCollection(static::$article->childNodes) as $element) {
+		foreach (new ElementCollection(static::$article->childNodes, new Element(static::$pasap)) as $element) {
 			echo "$element\n";
 		}
 
-		foreach (new ElementCollection(static::$body->childNodes) as $element) {
+		foreach (new ElementCollection(static::$body->childNodes, new Element(static::$pasap)) as $element) {
 			echo "$element\n";
 		}
 
-		foreach (new ElementCollection(static::$doge->childNodes) as $element) {
+		foreach (new ElementCollection(static::$doge->childNodes, new Element(static::$pasap)) as $element) {
 			echo "$element\n";
 		}
 
-		foreach (new ElementCollection(static::$news->childNodes) as $element) {
+		foreach (new ElementCollection(static::$news->childNodes, new Element(static::$pasap)) as $element) {
 			echo "$element\n";
 		}
 	}
@@ -115,10 +115,33 @@ class ElementCollectionTest extends BasicTest
 			. "<doge wow=\"amaze\" such=\"custom tag\"></doge>\n"
 		);
 
-		echo new ElementCollection(static::$a->childNodes) . "\n";
-		echo new ElementCollection(static::$article->childNodes) . "\n";
-		echo new ElementCollection(static::$body->childNodes) . "\n";
-		echo new ElementCollection(static::$doge->childNodes) . "\n";
-		echo new ElementCollection(static::$news->childNodes) . "\n";
+		echo new ElementCollection(static::$a->childNodes, new Element(static::$pasap)) . "\n";
+		echo new ElementCollection(static::$article->childNodes, new Element(static::$pasap)) . "\n";
+		echo new ElementCollection(static::$body->childNodes, new Element(static::$pasap)) . "\n";
+		echo new ElementCollection(static::$doge->childNodes, new Element(static::$pasap)) . "\n";
+		echo new ElementCollection(static::$news->childNodes, new Element(static::$pasap)) . "\n";
+	}
+
+	public function testParent ()
+	{
+		foreach (new ElementCollection(static::$a->childNodes, new Element(static::$pasap)) as $child) {
+			$this->assertInstanceOf(Element::class, $child->parent());
+		}
+
+		foreach (new ElementCollection(static::$article->childNodes, new Element(static::$pasap)) as $child) {
+			$this->assertInstanceOf(Element::class, $child->parent());
+		}
+
+		foreach (new ElementCollection(static::$body->childNodes, new Element(static::$pasap)) as $child) {
+			$this->assertInstanceOf(Element::class, $child->parent());
+		}
+
+		foreach (new ElementCollection(static::$doge->childNodes, new Element(static::$pasap)) as $child) {
+			$this->assertInstanceOf(Element::class, $child->parent());
+		}
+
+		foreach (new ElementCollection(static::$news->childNodes, new Element(static::$pasap)) as $child) {
+			$this->assertInstanceOf(Element::class, $child->parent());
+		}
 	}
 }
