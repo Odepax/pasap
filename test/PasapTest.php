@@ -113,6 +113,7 @@ class PasapTest extends TestCase
 	public function testParseSimplePasapWithPHP () { $this->parseAndCompare("simple-pasap-with-php"); }
 	public function testParseReadmeExample ()      { $this->parseAndCompare("readme-example"); }
 	public function testParseCustomRootPasap ()    { $this->parseAndCompare("custom-root-pasap"); }
+	public function testParseSimpleNamespaces ()   { $this->parseAndCompare("simple-namespaces"); }
 	// public function testParseNestedPasap ()        { $this->parseAndCompare("nested-pasap"); }
 	// public function testParse ()                   { $this->parseAndCompare(""); }
 

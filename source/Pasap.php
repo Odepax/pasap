@@ -53,7 +53,7 @@ abstract class Pasap
 	 * it from the outside.
 	 *
 	 * @param string $elementTag
-	 * The tag name of an element.
+	 * The fully namespaced tag name of an element.
 	 *
 	 * @return string|null
 	 * Returns the path of the definition file is the file exists, meaning the
@@ -65,6 +65,8 @@ abstract class Pasap
 	 */
 	public static function definitionFilePath (string $elementTag)
 	{
-		return is_file($path = static::$elementDefinitionsFolder . DIRECTORY_SEPARATOR . $elementTag . ".php") ? $path : null;
+		$definitionPath = implode(DIRECTORY_SEPARATOR, explode(':', $elementTag));
+
+		return is_file($path = static::$elementDefinitionsFolder . DIRECTORY_SEPARATOR . $definitionPath . ".php") ? $path : null;
 	}
 }
