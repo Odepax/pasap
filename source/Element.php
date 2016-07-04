@@ -73,13 +73,17 @@ class Element
 	}
 
 	/**
-	 * Creates, caches and returns this element's attribute collection.
+	 * Retrieves, caches and returns this element's data set.
 	 * @return array
 	 */
 	protected function getDataSet ()
 	{
 		if (is_null($this->dataSet)) {
-			$this->dataSet = Pasap::getDataSet($this->attr('pasap:data'));
+			if (is_null($this->attr('pasap:data'))) {
+				$this->dataSet = [];
+			} else {
+				$this->dataSet = Pasap::getDataSet($this->attr('pasap:data'));
+			}
 		}
 
 		return $this->dataSet;
