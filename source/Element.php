@@ -81,8 +81,20 @@ class Element
 			return "<!-- {$this->source->nodeValue} -->";
 		}
 
+		$tagParts = explode(":", $this->tag());
+
+		if (count($tagParts) > 1 && in_array($tagParts[0], [ "html", "svg", "xml", "xslt" ])) {
+			// Case 1: we force the element to be considered as native.
+			$native = true;
+			$tag = $tagParts[1];
+		} else {
+			// Case 2: the element is native if no definition file is found.
+			$native = is_null($definitionFile = Pasap::definitionFilePath($this->tag()));
+			$tag = $this->tag();
+		}
+
 		// Element.
-		if (is_null($definitionFile = Pasap::definitionFilePath($this->tag()))) {
+		if ($native) {
 			// This is a native element. Just left it as this.
 
 			// Put a space before a non-empty list of attributes.
@@ -95,9 +107,9 @@ class Element
 				"hr", "img", "input", "keygen", "link", "meta", "param",
 				"source", "track", "wbr"
 			], true)) {
-				return "<{$this->tag()}{$attr}/>";
+				return "<{$tag}{$attr}/>";
 			} else {
-				return "<{$this->tag()}{$attr}>{$this->children()}</{$this->tag()}>";
+				return "<{$tag}{$attr}>{$this->children()}</{$tag}>";
 			}
 
 		} else {
