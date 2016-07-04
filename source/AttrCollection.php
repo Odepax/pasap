@@ -50,7 +50,7 @@ class AttrCollection implements \Iterator
 		$output = "";
 
 		foreach ($this->source as $attr) {
-			if (!array_key_exists($attr->name, $this->locked)) {
+			if (!array_key_exists($attr->name, $this->locked) && $attr->name !== "pasap:ns") {
 				$output .= " {$attr->name}=\"{$attr->value}\"";
 			}
 		}
@@ -122,7 +122,7 @@ class AttrCollection implements \Iterator
 	{
 		// Let's look for the first position that is not locked.
 		for($this->iteratorIndex = 0; $this->valid(); ++$this->iteratorIndex) {
-			if (!array_key_exists($this->key(), $this->locked)) {
+			if (!array_key_exists($this->key(), $this->locked) && $this->key() !== "pasap:ns") {
 				break;
 			}
 		}
@@ -138,7 +138,7 @@ class AttrCollection implements \Iterator
 	{
 		// Let's look for the newt position that is not locked.
 		for(++$this->iteratorIndex; $this->valid(); ++$this->iteratorIndex) {
-			if (!array_key_exists($this->key(), $this->locked)) {
+			if (!array_key_exists($this->key(), $this->locked) && $this->key() !== "pasap:ns") {
 				break;
 			}
 		}

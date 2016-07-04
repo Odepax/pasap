@@ -4,6 +4,36 @@ namespace Pasap;
 
 class Element
 {
+	/** @var array Contains the history of namespaces passed through `pasap:ns` attributes. */
+	protected static $namespaceStack = [];
+
+	/**
+	 * Gets the full default namespace of all the elements.
+	 */
+	protected static function getNamespace ()
+	{
+		return ($ns = end(static::$namespaceStack)) === false ? "" : $ns;
+	}
+
+	/**
+	 * Sets the default namespace of all the elements.
+	 *
+	 * @param string $ns
+	 * The new full namespace to consider.
+	 */
+	protected static function setNamespace (string $ns)
+	{
+		static::$namespaceStack[] = $ns;
+	}
+
+	/**
+	 * Rollback to the previous default namespace.
+	 */
+	protected static function popNamespace ()
+	{
+		array_pop(static::$namespaceStack);
+	}
+
 	/** @var \DOMElement|\DOMText|\DOMComment The DOM element behind this interface. */
 	protected $source = null;
 
@@ -83,33 +113,64 @@ class Element
 
 		$tagParts = explode(":", $this->tag());
 
-		if (count($tagParts) > 1 && in_array($tagParts[0], [ "html", "svg", "xml", "xslt" ])) {
+		if (!is_null($this->attr("pasap:ns"))) {
+			static::setNamespace($this->attr("pasap:ns"));
+			$hasToPopNamespace = true;
+		}
+
+		if (in_array($tagParts[0], [ "html", "svg", "xml", "xslt" ])) {
 			// Case 1: we force the element to be considered as native.
 			$native = true;
-			$tag = $tagParts[1];
 		} else {
 			// Case 2: the element is native if no definition file is found.
-			$native = is_null($definitionFile = Pasap::definitionFilePath($this->tag()));
-			$tag = $this->tag();
+			if ($tagParts[0] === "") {
+				// Case 2.1: we force the namespace to start at root (via the tag or the ns stack).
+				array_shift($tagParts);
+
+				$tag = implode(":", $tagParts);
+			} else {
+				// Case 2.2: build the tag depending on the namespace stack.
+				if (empty(static::getNamespace())) {
+					$tag = $this->tag();
+				} else {
+					$tag = static::getNamespace() . ":" . $this->tag();
+				}
+			}
+
+			$native = is_null($definitionFile = Pasap::definitionFilePath($tag));
 		}
 
 		// Element.
 		if ($native) {
 			// This is a native element. Just left it as this.
 
+			$tag = is_null($tmpTag = end($tagParts)) ? $tag : $tmpTag;
+
 			// Put a space before a non-empty list of attributes.
 			$attr = empty($attr = $this->attr()->__toString()) ? "" : " " . $attr;
 
 			// Special self-closing HTML tags treatment.
 			// See https://developer.mozilla.org/en-US/docs/Glossary/Empty_element
-			if (in_array($this->tag(), [
+			if (in_array($tag, [
 				"area", "base", "br", "col", "colgroup", "command", "embed",
 				"hr", "img", "input", "keygen", "link", "meta", "param",
 				"source", "track", "wbr"
 			], true)) {
-				return "<{$tag}{$attr}/>";
+				$output = "<{$tag}{$attr}/>";
+
+				if (isset($hasToPopNamespace)) {
+					static::popNamespace();
+				}
+
+				return $output;
 			} else {
-				return "<{$tag}{$attr}>{$this->children()}</{$tag}>";
+				$output = "<{$tag}{$attr}>{$this->children()}</{$tag}>";
+
+				if (isset($hasToPopNamespace)) {
+					static::popNamespace();
+				}
+
+				return $output;
 			}
 
 		} else {
@@ -117,12 +178,19 @@ class Element
 
 			include $definitionFile;
 
+			if (isset($hasToPopNamespace)) {
+				static::popNamespace();
+			}
+
 			return ob_get_clean();
 		}
 	}
 
 	/**
 	 * Gets the tag name of this element.
+	 * It's important to know that the returned tag is the raw value which is
+	 * used in the input code and not the fully namespaced tag name which is
+	 * computed during rendering.
 	 *
 	 * @return string
 	 * Returns "a" for a `<a>`, "li" for a `<li>`, etc...
