@@ -115,7 +115,7 @@ class ElementCollection implements \Iterator
 	{
 		$node = $this->source->item($this->iteratorIndex);
 
-		if ($node instanceof \DOMElement || $node instanceof \DOMText) {
+		if ($node instanceof \DOMElement || $node instanceof \DOMText || $node instanceof \DOMComment) {
 			return new Element($node, $this->origin);
 		}
 
