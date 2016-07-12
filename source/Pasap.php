@@ -50,7 +50,7 @@ abstract class Pasap
 		$e = new Element($document->documentElement);
 		$c = $e->children()->__toString();
 
-		return "<!DOCTYPE {$document->doctype->name}>" . new Element($document->documentElement);
+		return (is_null($document->doctype) ? "" : "<!DOCTYPE {$document->doctype->name}>") . new Element($document->documentElement);
 	}
 
 	/**
