@@ -2,405 +2,446 @@
 
 namespace Pasap;
 
-class Element
+class Element implements IElement
 {
-	/** @var array Contains the history of namespaces passed through `pasap:ns` attributes. */
-	protected static $namespaceStack = [];
-
 	/**
-	 * Gets the full default namespace of all the elements.
-	 */
-	protected static function getNamespace ()
-	{
-		return ($ns = end(static::$namespaceStack)) === false ? "" : $ns;
-	}
-
-	/**
-	 * Sets the default namespace of all the elements.
+	 * The native PHP DOM node.
 	 *
-	 * @param string $ns
-	 * The new full namespace to consider.
+	 * @var \DOMNode
+	 *
+	 * @since 2.0.0
+	 *
+	 * @see IElement::__construct()
 	 */
-	protected static function setNamespace (string $ns)
-	{
-		static::$namespaceStack[] = $ns;
-	}
-
-	/**
-	 * Rollback to the previous default namespace.
-	 */
-	protected static function popNamespace ()
-	{
-		array_pop(static::$namespaceStack);
-	}
-
-	/** @var \DOMElement|\DOMText|\DOMComment The DOM element behind this interface. */
 	protected $source = null;
 
-	/** @var AttrCollection Caching for this element's attribute collection. */
-	protected $attrCollection = null;
-
-	/** @var ElementCollection Caching for this element's children collection. */
-	protected $childrenCollection = null;
-
-	/** @var array The data set of this element. */
-	protected $dataSet = null;
-
-	/** @var array The data scope of this element. */
-	protected $dataScope = null;
-
-	/** @var Element The parent of this element. */
+	/**
+	 * The parent of this element.
+	 *
+	 * @var IElement
+	 *
+	 * @since 2.0.0
+	 *
+	 * @see IElement::__construct()
+	 */
 	protected $parent = null;
 
 	/**
-	 * Creates, caches and returns this element's attribute collection.
-	 * @return AttrCollection
-	 */
-	protected function getAttrCollection ()
-	{
-		if (is_null($this->attrCollection)) {
-			$this->attrCollection = new AttrCollection($this->source->attributes);
-		}
-
-		return $this->attrCollection;
-	}
-
-	/**
-	 * Creates, caches and returns this element's attribute collection.
-	 * @return ElementCollection
-	 */
-	protected function getChildrenCollection ()
-	{
-		if (is_null($this->childrenCollection)) {
-			$this->childrenCollection = new ElementCollection($this->source->childNodes, $this);
-		}
-
-		return $this->childrenCollection;
-	}
-
-	/**
-	 * Retrieves, caches and returns this element's data set.
-	 * @return array
-	 */
-	protected function getDataSet ()
-	{
-		if (is_null($this->dataSet)) {
-			if (is_null($this->attr('pasap:data'))) {
-				$this->dataSet = [];
-			} else {
-				$this->dataSet = Pasap::getDataSet($this->attr('pasap:data'));
-			}
-		}
-
-		return $this->dataSet;
-	}
-
-	/**
-	 * Retrieves, caches and returns this element's data scope.
-	 * @return array
-	 */
-	protected function getDataScope ()
-	{
-		if (is_null($this->dataScope)) {
-			if (is_null($this->attr('pasap:scope'))) {
-				$this->dataScope = [];
-			} else {
-				$this->dataScope = Pasap::getDataSet($this->attr('pasap:scope'));
-			}
-		}
-
-		return $this->dataScope;
-	}
-
-	/**
-	 * Element constructor.
-	 * This class provides an interface to native DOM elements, handling DOM
-	 * elements and DOM text nodes.
+	 * This array contains cached information that correspond to the return
+	 * values of certain methods:
 	 *
-	 * @param \DOMElement|\DOMText|\DOMComment|\string $source
-	 * The DOM element behind this interface.
+	 * - `scope`: `array`.
+	 * - `ns`: `string` or `null`.
+	 * - `endTag`: `string`.
+	 * - `rawNs`: `string` or `null`.
+	 * - `rawFullTag`: `string`.
+	 * - `rootNs`: `string` or `null`.
+	 * - `fullTag`: `string`.
+	 * - `resolvedTag`: `string` or `null`.
 	 *
-	 * @param Element|null $parent
-	 * The parent of this element.
+	 * @var array
 	 *
-	 * @since 1.3.0 New parameter: `$parent`.
-	 * @since 0.0.0
+	 * @since 2.0.0
+	 *
+	 * @see IElement::scope()
+	 * @see IElement::ns()
+	 * @see IElement::endTag()
+	 * @see IElement::rawNs()
+	 * @see IElement::rawFullTag()
+	 * @see IElement::rootNs()
+	 * @see IElement::fullTag()
+	 * @see IElement::resolvedTag()
 	 */
-	public function __construct ($source, $parent = null)
+	protected $cache = [
+		'scope' => [],
+		'data'  => []
+	];
+
+	// Pasap\IElement Methods
+	// ----------------------------------------------------------------
+
+	/** @inheritDoc */
+	public function __construct (\DOMNode $source, $parent = null)
 	{
-		if ($source instanceof \DOMElement || $source instanceof \DOMText || $source instanceof \DOMComment) {
+		if (
+			   $source instanceof \DOMElement
+			|| $source instanceof \DOMText
+			|| $source instanceof \DOMComment
+			|| $source instanceof \DOMProcessingInstruction
+		) {
 			$this->source = $source;
-		} else if (is_string($source)) {
-			$this->source = new \DOMText($source);
 		} else {
-			throw new \（ノಥ益ಥ）ノ︵┻━┻("Why you no provide the right arg type (DOMElement|DOMText|string) !?");
+			throw new \TypeError('Invalid ' . get_class($source) . ' given as element source, expected \DOMElement or \DOMText or \DOMComment or \DOMProcessingInstruction.');
 		}
 
-		if (!is_null($parent)) {
-			if ($parent instanceof Element) {
-				$this->parent = $parent;
+		if ($parent instanceof IElement || is_null($parent)) {
+			$this->parent = $parent;
+		} else {
+			throw new \TypeError('Invalid ' . get_class($parent) . ' given as parent element, expected Pasap\IElement or NULL.');
+		}
+
+		// Bring Pasap namespace to the scope.
+		if (!is_null($this->attr('pasap:ns'))) {
+			if ($this->attr('pasap:ns') === '') {
+				// This is a pasap:ns reset.
+				$this->cache['scope']['pasap:ns'] = null;
 			} else {
-				throw new \（ノಥ益ಥ）ノ︵┻━┻("Why you no provide the right parent type (Element) !?");
+				$this->cache['scope']['pasap:ns'] = $this->attr('pasap:ns');
 			}
 		}
 	}
 
-	/**
-	 * Converts this element into HTML and gets the output.
-	 *
-	 * @return string
-	 * This element, once parsed, recursively.
-	 *
-	 * @link http://php.net/manual/en/language.oop5.magic.php#language.oop5.magic.tostring
-	 * @since 0.0.0
-	 */
-	public function __toString ()
+	/** @inheritDoc */
+	public function __toString (): string
 	{
-		// Text node.
-		if ($this->source instanceof \DOMText) {
-			return $this->source->nodeValue;
-		}
+		if ($this->is('#text'))    return $this->source->nodeValue;
+		if ($this->is('#comment')) return "<!-- {$this->source->nodeValue} -->";
+		if ($this->is('#cdata'))   return "<![CDATA[{$this->source->nodeValue}]]>";
+		if ($this->is('#process')) return "<?{$this->source->nodeName} {$this->source->nodeValue} ?>";
 
-		// Comment.
-		if ($this->source instanceof \DOMComment) {
-			return "<!-- {$this->source->nodeValue} -->";
-		}
+		if ($this->is('#pasap')) return $this->children()->__toString();
 
-		$tagParts = explode(":", $this->tag());
+		if ($this->is('#native')) {
+			$attributes = empty($attributes = $this->attr()->__toString()) ? '' : ' ' . $attributes;
 
-		if (!is_null($this->attr("pasap:ns"))) {
-			static::setNamespace($this->attr("pasap:ns"));
-			$hasToPopNamespace = true;
-		}
-
-		if (in_array($tagParts[0], [ "html", "svg", "xml", "xslt" ])) {
-			// Case 1: we force the element to be considered as native.
-			$native = true;
-		} else {
-			// Case 2: the element is native if no definition file is found.
-			if ($tagParts[0] === "") {
-				// Case 2.1: we force the namespace to start at root (via the tag or the ns stack).
-				array_shift($tagParts);
-
-				$tag = implode(":", $tagParts);
+			if ($this->is('#self-closing')) {
+				return "<{$this->endTag()}{$attributes}/>";
 			} else {
-				// Case 2.2: build the tag depending on the namespace stack.
-				if (empty(static::getNamespace())) {
-					$tag = $this->tag();
-				} else {
-					$tag = static::getNamespace() . ":" . $this->tag();
-				}
+				return "<{$this->endTag()}{$attributes}>{$this->children()}</{$this->endTag()}>";
 			}
-
-			$native = is_null($definitionFile = Pasap::definitionFilePath($tag));
 		}
 
-		// Element.
-		if ($native) {
-			// This is a native element. Just left it as this.
-
-			$tag = is_null($tmpTag = end($tagParts)) ? $tag : $tmpTag;
-
-			// Put a space before a non-empty list of attributes.
-			$attr = empty($attr = $this->attr()->__toString()) ? "" : " " . $attr;
-
-			// Special self-closing HTML tags treatment.
-			// See https://developer.mozilla.org/en-US/docs/Glossary/Empty_element
-			if (in_array($tag, [
-				"area", "base", "br", "col", "colgroup", "command", "embed",
-				"hr", "img", "input", "keygen", "link", "meta", "param",
-				"source", "track", "wbr"
-			], true)) {
-				$output = "<{$tag}{$attr}/>";
-
-				if (isset($hasToPopNamespace)) {
-					static::popNamespace();
-				}
-
-				return $output;
-			} else {
-				$output = "<{$tag}{$attr}>{$this->children()}</{$tag}>";
-
-				if (isset($hasToPopNamespace)) {
-					static::popNamespace();
-				}
-
-				return $output;
-			}
-
-		} else {
+		if ($this->is('#resolved')) {
 			ob_start();
 
-			include $definitionFile;
-
-			if (isset($hasToPopNamespace)) {
-				static::popNamespace();
-			}
+			include $this->cache['definitionFile'];
 
 			return ob_get_clean();
+		} else {
+			$attributes = empty($attributes = $this->attr()->__toString()) ? '' : ' ' . $attributes;
+
+			if (is_null($this->rawNs())) {
+				// Ultimate check for self-closing element.
+				foreach (Configure::get('nativeNamespace') as $selfClosingTags) {
+					if (in_array($this->rawFullTag(), $selfClosingTags)) {
+						return "<{$this->endTag()}{$attributes}/>";
+					}
+				}
+			}
+
+			return "<{$this->rawFullTag()}{$attributes}>{$this->children()}</{$this->rawFullTag()}>";
 		}
 	}
 
-	/**
-	 * Gets the tag name of this element.
-	 * It's important to know that the returned tag is the raw value which is
-	 * used in the input code and not the fully namespaced tag name which is
-	 * computed during rendering.
-	 *
-	 * @return string
-	 * Returns "a" for a `<a>`, "li" for a `<li>`, etc...
-	 * Returns "#text" for text nodes.
-	 * Returns "#comment" for comments.
-	 *
-	 * @since 0.0.0
-	 */
-	public function tag ()
+	/** @inheritDoc */
+	public function endTag (): string
+	{
+		if (!array_key_exists('rawTagParts', $this->cache)) {
+			$this->cache['rawTagParts'] = explode(':', $this->rawFullTag());
+		}
+
+		return end($this->cache['rawTagParts']);
+	}
+
+	/** @inheritDoc */
+	public function rawNs ()
+	{
+		if (!array_key_exists('rawNs', $this->cache)) {
+			if (!array_key_exists('rawTagParts', $this->cache)) {
+				$this->cache['rawTagParts'] = explode(':', $this->rawFullTag());
+			}
+
+			if (count($this->cache['rawTagParts']) === 1) {
+				$this->cache['rawNs'] =  null;
+			} else {
+				$this->cache['rawNs'] =  implode(':', array_slice($this->cache['rawTagParts'], 0, -1));
+			}
+		}
+
+		return $this->cache['rawNs'];
+	}
+
+	/** @inheritDoc */
+	public function rawRootNs ()
+	{
+		if (!array_key_exists('rawTagParts', $this->cache)) {
+			$this->cache['rawTagParts'] = explode(':', $this->rawFullTag());
+		}
+
+		if (count($this->cache['rawTagParts']) === 1) {
+			return null;
+		} else {
+			return $this->cache['rawTagParts'][0];
+		}
+	}
+
+	/** @inheritDoc */
+	public function rawFullTag (): string
 	{
 		return $this->source->nodeName;
 	}
 
-	/**
-	 * Indicates if this element is a `$tag.`
-	 *
-	 * @param string $tag
-	 * The tag name to test against.
-	 * If the parameter is set to `"#text"`, this method will indicate if this
-	 * element is a text node or not.
-	 * If the parameter is set to `"#comment"`, this method will indicate if this
-	 * element is a comment or not.
-	 *
-	 * @return bool
-	 * Returns `$this->tag() === $tag` exactly.
-	 *
-	 * @see Element::tag()
-	 * This is a shortcut to perform a test on the `tag` method's return value.
-	 *
-	 * @since 0.1.0 `$this->is("#orphan")` is not functional anymore.
-	 * @since 0.0.0
-	 */
-	public function is (string $tag)
+	/** @inheritDoc */
+	public function ns ()
 	{
-		return $this->tag() === $tag;
-	}
-
-	/**
-	 * Gets the value of an attribute of this element.
-	 *
-	 * @param null|string $key
-	 * The name of the attribute to seek.
-	 *
-	 * @return AttrCollection|string|null
-	 * Returns `NULL` if this element is a text node or a comment since they
-	 * don't have any attribute.
-	 * Returns an attribute collection if the parameter is NULL.
-	 * Returns `NULL` if the attribute does not exist.
-	 * Returns the value of the requested attribute as a string, which might be
-	 * empty.
-	 *
-	 * @since 0.0.0
-	 */
-	public function attr ($key = null)
-	{
-		if ($this->source instanceof \DOMText || $this->source instanceof \DOMComment) {
-			return null;
+		if ($this->rawRootNs() === '') {
+			return $this->rawNs();
 		}
 
-		if (is_null($key)) {
-			return $this->getAttrCollection();
-		}
+		if (!array_key_exists('ns', $this->cache)) {
+			if (!array_key_exists('tagParts', $this->cache)) {
+				$this->cache['tagParts'] = explode(':', $this->fullTag());
+			}
 
-		if (!is_string($key)) {
-			throw new \（ノಥ益ಥ）ノ︵┻━┻("Why you no provide the right arg type (string) !?");
-		}
-
-		if ($this->source->hasAttribute($key)) {
-			return $this->source->getAttribute($key);
-		} else {
-			return null;
-		}
-	}
-
-	/**
-	 * Gets the children of this element.
-	 *
-	 * @return ElementCollection|null
-	 * Returns `NULL` if this element is a text node since text nodes don't have
-	 * any child.
-	 * Returns an element collection otherwise.
-	 *
-	 * @since 0.0.0
-	 */
-	public function children ()
-	{
-		if ($this->source instanceof \DOMText) {
-			return null;
-		} else {
-			return $this->getChildrenCollection();
-		}
-	}
-
-	/**
-	 * Gets the value behind a key of this element's data set.
-	 *
-	 * @param mixed $key
-	 * The key of the item to look for.
-	 *
-	 * @return mixed
-	 * Returns the value of the requested key.
-	 * Returns `NULL` if the key does not exist.
-	 *
-	 * @since 1.2.0
-	 */
-	public function data ($key)
-	{
-		if (array_key_exists($key, $data = $this->getDataSet())) {
-			return $data[$key];
-		} else {
-			return null;
-		}
-	}
-
-	/**
-	 * Gets the value behind a key of this element's data scope.
-	 *
-	 * @param mixed $key
-	 * The key of the item to look for.
-	 *
-	 * @return mixed
-	 * Returns the value of the requested key.
-	 * Returns `NULL` if the key does not exist.
-	 *
-	 * @since 1.3.0
-	 */
-	public function scope ($key)
-	{
-		if (array_key_exists($key, $data = $this->getDataScope())) {
-			// Case 1: it's in our scope. Great, return it.
-			return $data[$key];
-		} else {
-			// Case 2. it's not in the scope, but don't give up, it's maybe in the parent's one.
-			if (is_null($this->parent())) {
-				// Ok, give up this shit.
-				return null;
+			if (count($this->cache['tagParts']) === 1) {
+				$this->cache['ns'] =  null;
 			} else {
-				// See? Our parents will always be here for us!
-				return $this->parent()->scope($key);
+				$this->cache['ns'] =  implode(':', array_slice($this->cache['tagParts'], 0, -1));
 			}
 		}
+
+		return $this->cache['ns'];
 	}
 
-	/**
-	 * Gets the parent of this element.
-	 *
-	 * @return Element|null
-	 * Returns an element which is the parent of this one in the DOM tree.
-	 * Returns `NULL` when this element is the root element of the considered
-	 * document or if no parent is provided.
-	 *
-	 * @since 1.3.0
-	 */
+	/** @inheritDoc */
+	public function rootNs ()
+	{
+		if ($this->rawRootNs() === '') {
+			return $this->rawRootNs();
+		}
+
+		if (!array_key_exists('tagParts', $this->cache)) {
+			$this->cache['tagParts'] = explode(':', $this->fullTag());
+		}
+
+		if (count($this->cache['tagParts']) === 1) {
+			return null;
+		} else {
+			return $this->cache['tagParts'][0];
+		}
+	}
+
+	/** @inheritDoc */
+	public function fullTag (): string
+	{
+		if ($this->rawRootNs() === '') {
+			return $this->rawFullTag();
+		}
+
+		if (is_null($this->parent()) || is_null($this->parent()->scope('pasap:ns'))) {
+			return $this->rawFullTag();
+		} else {
+			return $this->parent()->scope('pasap:ns') . ':' . $this->rawFullTag();
+		}
+	}
+
+	/** @inheritDoc */
+	public function resolvedTag ()
+	{
+		if (
+			  !$this->is('#element')
+			|| $this->is('#native')
+			|| $this->is('#pasap')
+		) {
+			return null;
+		}
+
+		if (!array_key_exists('resolvedTag', $this->cache)) {
+			if ($this->rawRootNs() === '') {
+				// Case 1. Empty namespace is used: try to find a definition file
+				// for the element in the empty ns definition folder.
+				if (is_null($definitionFile = Pasap::definitionFile($this->rawFullTag()))) {
+					// Case 1.1. Nothing in the empty ns folder... Let's get rid of the
+					// empty ns and find a definition file in another namespace folder.
+					$tag = $this->cache['rawTagParts'];
+
+					array_shift($tag);
+
+					if (is_null($definitionFile = Pasap::definitionFile(implode(':', $tag)))) {
+						// Case 1.2. Give up this shit.
+						$this->cache['resolvedTag'] = null;
+					} else {
+						$this->cache['resolvedTag'] = $tag;
+						$this->cache['definitionFile'] = $definitionFile;
+					}
+				} else {
+					$this->cache['resolvedTag'] = $this->rawFullTag();
+					$this->cache['definitionFile'] = $definitionFile;
+				}
+			} else if (!is_null($this->parent()) && !is_null($this->parent()->scope('pasap:ns'))) {
+				// Case 2. We have a pasap:ns somewhere: let's use it.
+				if (is_null($definitionFile = Pasap::definitionFile($this->fullTag()))) {
+					// Case 2.1. Nothing in this namespace. Let's try with a sub-folder
+					// of the empty ns maybe?
+					if (is_null($definitionFile = Pasap::definitionFile(':' . $this->fullTag()))) {
+						// Case 2.2. Ok... Fuck the pasap:ns, we'll find without it.
+						if (is_null($definitionFile = Pasap::definitionFile($this->rawFullTag()))) {
+							// Case 2.3. Empty namespace, please!
+							if (is_null($definitionFile = Pasap::definitionFile(':' . $this->rawFullTag()))) {
+								// Case 2.4. Give up this shit.
+								$this->cache['resolvedTag'] = null;
+							} else {
+								$this->cache['resolvedTag'] = ':' . $this->rawFullTag();
+								$this->cache['definitionFile'] = $definitionFile;
+							}
+						} else {
+							$this->cache['resolvedTag'] = $this->rawFullTag();
+							$this->cache['definitionFile'] = $definitionFile;
+						}
+					} else {
+						$this->cache['resolvedTag'] = ':' . $this->fullTag();
+						$this->cache['definitionFile'] = $definitionFile;
+					}
+				} else {
+					$this->cache['resolvedTag'] = $this->fullTag();
+					$this->cache['definitionFile'] = $definitionFile;
+				}
+			} else {
+				// Case 3. Try to find the element in it's defined root namespace.
+				if (is_null($definitionFile = Pasap::definitionFile($this->rawFullTag()))) {
+					// Case 3.1. Try again in a sub-folder of the empty ns.
+					if (is_null($definitionFile = Pasap::definitionFile(':' . $this->rawFullTag()))) {
+						// Case 3.2. Try fucking with flies...
+						$this->cache['resolvedTag'] = null;
+					} else {
+						$this->cache['resolvedTag'] = ':' . $this->rawFullTag();
+						$this->cache['definitionFile'] = $definitionFile;
+					}
+				} else {
+					$this->cache['resolvedTag'] = $this->rawFullTag();
+					$this->cache['definitionFile'] = $definitionFile;
+				}
+			}
+		}
+
+		return $this->cache['resolvedTag'];
+	}
+
+	/** @inheritDoc */
+	public function resolvedRootNs () {
+		if (!$this->is('#resolved')) {
+			return null;
+		}
+
+		if (($i = strpos($this->resolvedTag(), ':')) === false) {
+			return null;
+		} else {
+			return substr($this->resolvedTag(), 0, $i);
+		}
+	}
+
+	/** @inheritDoc */
+	public function tag (): string {
+		return is_null($tag = $this->resolvedTag()) ? $this->rawFullTag() : $tag;
+	}
+
+	/** @inheritDoc */
+	public function is (string $tag): bool
+	{
+		switch ($tag) {
+			case '#text':
+			case '#comment':
+				return $tag === $this->rawFullTag();
+
+			case '#native':
+				return array_key_exists($this->rawRootNs(), Configure::get('nativeNamespace'));
+
+			case '#self-closing':
+				return $this->is('#native') && in_array($this->rawFullTag(), Configure::get('nativeNamespace')[$this->rootNs()]);
+
+			case '#process': return $this->source instanceof \DOMProcessingInstruction;
+			case '#element': return $this->source instanceof \DOMElement;
+
+			case '#pasap':
+				return $this->rawRootNs() === 'pasap' || $this->endTag() === 'pasap';
+
+			case '#resolved':
+				return !is_null($this->resolvedTag());
+
+			case '#cdata':
+				return $this->rawFullTag() === '#cdata-section';
+
+			default:
+				return $tag === $this->tag();
+		}
+	}
+
+	/** @inheritDoc */
 	public function parent ()
 	{
 		return $this->parent;
+	}
+
+	/** @inheritDoc */
+	public function children ($tag = null)
+	{
+		if ($this->is('#element')) {
+			$children = new ElementCollection($this->source->childNodes, $this);
+
+			if (is_null($tag)) {
+				return $children;
+			} else {
+				return $children->only($tag);
+			}
+		} else {
+			return null;
+		}
+	}
+
+	/** @inheritDoc */
+	public function attr ($name = null, $fallback = null)
+	{
+		if ($this->is('#element')) {
+			// We consider only regular DOM elements can have attributes. Text nodes,
+			// comments, etc... don't have ones.
+			if (is_null($name)) {
+				// No argument given: return the whole collection.
+				return new AttrCollection($this->source->attributes);
+			} else {
+				if ($this->source->hasAttribute($name)) {
+					return $this->source->getAttribute($name);
+				} else {
+					return $fallback;
+				}
+			}
+		} else {
+			return $fallback;
+		}
+	}
+
+	/** @inheritDoc */
+	public function data (string $key, $fallback = null)
+	{
+		if (is_null($this->attr('pasap:data'))) {
+			return $fallback;
+		} else if (array_key_exists($key, $data = Pasap::getData($this->attr('pasap:data')))) {
+			return $data[$key];
+		} else {
+			return $fallback;
+		}
+	}
+
+	/** @inheritDoc */
+	public function scope (string $key, $fallback = null)
+	{
+		if (!array_key_exists($key, $this->cache['scope'])) {
+			if (is_null($this->attr('pasap:scope'))) {
+				$this->cache['scope'][$key] = $fallback;
+			} else if (array_key_exists($key, $data = Pasap::getData($this->attr('pasap:scope')))) {
+				// Case 1: it's in our scope. Great, return it.
+				$this->cache['scope'][$key] = $data[$key];
+			} else {
+				// Case 2. it's not in our scope, but don't give up, it's maybe in the parent's one.
+				if (is_null($this->parent())) {
+					// Ok, give up this shit.
+					$this->cache['scope'][$key] = $fallback;
+				} else {
+					// See? Our parents will always be here for us!
+					$this->cache['scope'][$key] = $this->parent()->scope($key, $fallback);
+				}
+			}
+		}
+
+		return $this->cache['scope'][$key];
 	}
 }

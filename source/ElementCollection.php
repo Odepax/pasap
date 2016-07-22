@@ -2,123 +2,256 @@
 
 namespace Pasap;
 
-class ElementCollection implements \Iterator
+class ElementCollection implements IElementCollection
 {
-	/** @var \DOMNodeList The list which contains the elements. */
+	/**
+	 * The map which contains the elements.
+	 *
+	 * @var \DOMNodeList
+	 *
+	 * @since 2.0.0
+	 *
+	 * @see IElementCollection::__construct()
+	 */
 	protected $source = null;
 
-	/** @var int This value is used in the implementation of the \Iterator interface. */
-	protected $iteratorIndex = 0;
-
-	/** @var Element The parent of the children contained in this collection. */
-	protected $origin = null;
+	/**
+	 * The parent of the elements contained in this collection.
+	 *
+	 * @var IElement
+	 *
+	 * @since 2.0.0
+	 *
+	 * @see IElementCollection::__construct()
+	 */
+	protected $parent = null;
 
 	/**
-	 * ElementCollection constructor.
-	 * This class provides a way to iterate over the children of a xml tag
-	 * with a `foreach` statement, but also to parse and `echo` all children as
-	 * a xml string.
+	 * This field stores the default behaviour of the elements locker.
 	 *
-	 * This class is used by the Pasap library, but you should normally not have
-	 * to instantiate it directly.
+	 * @var bool
+	 *
+	 * @since 2.0.0
+	 *
+	 * @see IElementCollection::lock()
+	 * @see IElementCollection::unlock()
+	 * @see IElementCollection::but()
+	 * @see IElementCollection::only()
+	 * @see IElementCollection::isLocked()
+	 */
+	protected $lockerDefault = false;
+
+	/**
+	 * An array of string that stores names of elements that must be
+	 * considered as exceptions by the element locker.
+	 *
+	 * @var array
+	 *
+	 * @since 2.0.0
+	 *
+	 * @see IElementCollection::lock()
+	 * @see IElementCollection::unlock()
+	 * @see IElementCollection::but()
+	 * @see IElementCollection::only()
+	 * @see IElementCollection::isLocked()
+	 */
+	protected $lockerExceptions = [];
+
+	/**
+	 * This field contains Pasap elements corresponding to the native nodes
+	 * wrapped in this collection.
+	 *
+	 * @var IElement[]
+	 *
+	 * @since 2.0.0
+	 */
+	protected $cache = [];
+
+	/**
+	 * Creates an element collection.
 	 *
 	 * @param \DOMNodeList $source
-	 * The list which contains the elements.
+	 * This is the native PHP node collection to be wrapped in this collection.
 	 *
-	 * @param Element $origin
-	 * The element these children are children of.
+	 * @param IElement $parent
+	 * This object is the parent element of the child elements contained in this
+	 * collection.
 	 *
-	 * @since 0.0.0
+	 * @since 2.0.0
 	 */
-	public function __construct ($source, Element $origin)
+	public function __construct (\DOMNodeList $source, IElement $parent)
 	{
-		if ($source instanceof \DOMNodeList) {
-			$this->source = $source;
-		} else {
-			throw new \（ノಥ益ಥ）ノ︵┻━┻("Why you no provide the right arg type (DOMNodeList) !?");
-		}
-
-		$this->origin = $origin;
+		$this->source = $source;
+		$this->parent = $parent;
 	}
 
 	/**
-	 * Gets a string which represents the xml children in this collection.
+	 * Indicates if a tag name is locked.
 	 *
-	 * @return string
+	 * @param string $tag
+	 * The name that designates the tag name to be tested.
 	 *
-	 * @link http://php.net/manual/en/language.oop5.magic.php#language.oop5.magic.tostring
-	 * @since 0.0.0
+	 * @return bool
+	 * Returns `TRUE` if the specified tag name is locked, `FALSE` otherwise.
+	 *
+	 * @since 2.0.0
+	 *
+	 * @see IAttrCollection::lock()
 	 */
-	function __toString ()
+	public function isLocked (string $tag): bool
 	{
-		$output = "";
+		// Returns the default locker values or its opposite, depending on
+		// currently configured exceptions.
+		if (array_key_exists($tag, $this->lockerExceptions)) {
+			return !$this->lockerDefault;
+		} else {
+			return $this->lockerDefault;
+		}
+	}
 
-		foreach ($this as $element) {
-			$output .= $element->__toString();
+	// Pasap\IElementCollection Methods
+	// ----------------------------------------------------------------
+
+	/** @inheritDoc */
+	public function __toString (): string
+	{
+		$output = '';
+
+		$i = 0;
+		foreach ($this->source as $node) {
+			if (!array_key_exists($i, $this->cache)) {
+				$this->cache[$i] = new Element($node, $this->parent);
+			}
+
+			// Output the element if it is not locked.
+			if (!$this->isLocked($this->cache[$i]->tag())) {
+				$output .= $this->cache[$i];
+			}
+
+			++$i;
 		}
 
 		return $output;
 	}
 
-	/**
-	 * Rewind the Iterator to the first element.
-	 * @link http://php.net/manual/en/iterator.rewind.php
-	 * @return void Any returned value is ignored.
-	 * @since 5.0.0
-	 */
-	public function rewind ()
+	/** @inheritDoc */
+	public function lock (string $tag)
 	{
-		$this->iteratorIndex = 0;
+		// DEV: If this method is modified, please consider changing but and
+		// only methods too, since they are not using lock and unlock!
+
+		if ($this->lockerDefault === false) {
+			// OK, case 1: by default, nothing is locked. Let's add an exception.
+			$this->lockerExceptions[$tag] = null;
+		} else {
+			// Case 2: by default, everything is locked. Let's remove the
+			// exception if there is one.
+			if (array_key_exists($tag, $this->lockerExceptions)) {
+				unset($this->lockerExceptions[$tag]);
+			}
+		}
 	}
 
-	/**
-	 * Move forward to next element.
-	 * @link http://php.net/manual/en/iterator.next.php
-	 * @return void Any returned value is ignored.
-	 * @since 5.0.0
-	 */
-	public function next ()
+	/** @inheritDoc */
+	public function unlock (string $tag)
 	{
-		++$this->iteratorIndex;
+		// DEV: If this method is modified, please consider changing but and
+		// only methods too, since they are not using lock and unlock!
+
+		if ($this->lockerDefault === true) {
+			// OK, case 1: by default, everything is locked. Let's add an
+			// exception.
+			$this->lockerExceptions[$tag] = null;
+		} else {
+			// Case 2: by default, nothing is locked. Let's remove the exception
+			// if there is one.
+			if (array_key_exists($tag, $this->lockerExceptions)) {
+				unset($this->lockerExceptions[$tag]);
+			}
+		}
 	}
 
-	/**
-	 * Checks if current position is valid.
-	 * @link http://php.net/manual/en/iterator.valid.php
-	 * @return boolean The return value will be casted to boolean and then evaluated.
-	 * Returns true on success or false on failure.
-	 * @since 5.0.0
-	 */
-	public function valid ()
+	/** @inheritDoc */
+	public function but (string ...$tags): IElementCollection
 	{
-		return $this->iteratorIndex < $this->source->length;
-	}
+		// Change default behaviour: don't lock anything.
+		$this->lockerDefault = false;
 
-	/**
-	 * Return the key of the current element.
-	 * @link http://php.net/manual/en/iterator.key.php
-	 * @return mixed scalar on success, or null on failure.
-	 * @since 5.0.0
-	 */
-	public function key ()
-	{
-		return $this->iteratorIndex;
-	}
+		// Locker reset.
+		$this->lockerExceptions = [];
 
-	/**
-	 * Return value of the current element.
-	 * @link http://php.net/manual/en/iterator.current.php
-	 * @return mixed Can return any type.
-	 * @since 5.0.0
-	 */
-	public function current ()
-	{
-		$node = $this->source->item($this->iteratorIndex);
-
-		if ($node instanceof \DOMElement || $node instanceof \DOMText || $node instanceof \DOMComment) {
-			return new Element($node, $this->origin);
+		// Populate with new exceptions.
+		foreach ($tags as $tag) {
+			$this->lockerExceptions[$tag] = null;
 		}
 
-		throw new \（ノ゜Д゜）ノ︵┻━┻("How u wanna me build an element with that (" . get_class($node) . ") !?");
+		return $this;
+	}
+
+	/** @inheritDoc */
+	public function only (string ...$tags): IElementCollection
+	{
+		// Change default behaviour: lock everything.
+		$this->lockerDefault = true;
+
+		// Locker reset.
+		$this->lockerExceptions = [];
+
+		// Populate with new exceptions.
+		foreach ($tags as $tag) {
+			$this->lockerExceptions[$tag] = null;
+		}
+
+		return $this;
+	}
+
+	/** @inheritDoc */
+	public function children ($tag = null): IElementCollection
+	{
+		$grandChildrenCollection = [];
+
+		foreach ($this as $child) {
+			if ($child->is('#element') && $child->children()->count() != 0) {
+				$grandChildrenCollection[] = $child->children();
+			}
+		}
+
+		if (count($grandChildrenCollection) === 1) {
+			$aggregate = $grandChildrenCollection[0];
+		} else {
+			$aggregate = new ElementCollectionAggregate($grandChildrenCollection);
+		}
+
+		if (is_null($tag)) {
+			return $aggregate;
+		} else {
+			return $aggregate->only($tag);
+		}
+	}
+
+	// \IteratorAggregate Methods
+	// --------------------------------------------------------------	}
+
+	/** @inheritDoc */
+	public function getIterator ()
+	{
+		foreach ($this->source as $i => $node) {
+			if (!array_key_exists($i, $this->cache)) {
+				$this->cache[$i] = new Element($node, $this->parent);
+			}
+
+			if (!$this->isLocked($this->cache[$i]->tag())) {
+				yield $this->cache[$i];
+			}
+		}
+	}
+
+	// \Countable Methods
+	// ----------------------------------------------------------------
+
+	/** @inheritDoc */
+	public function count ()
+	{
+		return $this->source->length;
 	}
 }

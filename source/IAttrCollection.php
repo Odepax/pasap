@@ -20,17 +20,6 @@ namespace Pasap;
 interface IAttrCollection extends \Iterator
 {
 	/**
-	 * Creates an attribute collection.
-	 *
-	 * @param \DOMNamedNodeMap $source
-	 * This is the native PHP attribute collection to be wrapped in this
-	 * collection.
-	 *
-	 * @since 2.0.0
-	 */
-	public function __construct(\DOMNamedNodeMap $source);
-
-	/**
 	 * Renders the attributes of this collection recursively and returns the
 	 * output string.
 	 *

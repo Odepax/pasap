@@ -17,22 +17,8 @@ namespace Pasap;
  *
  * @see IElement::children()
  */
-interface IElementCollection extends \Iterator, \Countable
+interface IElementCollection extends \IteratorAggregate, \Countable
 {
-	/**
-	 * Creates an element collection.
-	 *
-	 * @param \DOMNodeList $source
-	 * This is the native PHP node collection to be wrapped in this collection.
-	 *
-	 * @param IElement $parent
-	 * This object is the parent element of the child elements contained in this
-	 * collection.
-	 *
-	 * @since 2.0.0
-	 */
-	public function __construct(\DOMNodeList $source, IElement $parent);
-
 	/**
 	 * Renders the elements of this collection recursively and returns the
 	 * output string.
@@ -53,7 +39,7 @@ interface IElementCollection extends \Iterator, \Countable
 	 *
 	 * @param string $tag
 	 * The name that designates the tag name to be locked. Tags are compared
-	 * with `$e->resolvedTag()`.
+	 * with `$e->tag()`.
 	 *
 	 * @since 2.0.0
 	 *
@@ -68,7 +54,7 @@ interface IElementCollection extends \Iterator, \Countable
 	 *
 	 * @param string $tag
 	 * The name that designates the tag name to be unlocked. Tags are compared
-	 * with `$e->resolvedTag()`.
+	 * with `$e->tag()`.
 	 *
 	 * @since 2.0.0
 	 *
@@ -87,7 +73,7 @@ interface IElementCollection extends \Iterator, \Countable
 	 *
 	 * @param string[] ...$tags
 	 * The names that designate the tag names to be locked. Tags are compared
-	 * with `$e->resolvedTag()`.
+	 * with `$e->tag()`.
 	 *
 	 * @return IElementCollection
 	 * Returns a reference to the element collection you called this method on
@@ -119,7 +105,7 @@ interface IElementCollection extends \Iterator, \Countable
 	 *
 	 * @param string[] ...$tags
 	 * The names that designate the tag names to be unlocked. Tags are compared
-	 * with `$e->resolvedTag()`.
+	 * with `$e->tag()`.
 	 *
 	 * @return IElementCollection
 	 * Returns a reference to the element collection you called this method on
@@ -137,13 +123,17 @@ interface IElementCollection extends \Iterator, \Countable
 	 * Aggregates and returns the children of all the the elements of this
 	 * collection.
 	 *
-	 * @param string $tag
+	 * @param string|null $tag
 	 * If specified, this method becomes a shortcut for
 	 * `$e->children()->only($tag)`.
 	 *
 	 * @return IElementCollection
 	 * Returns a new element collection, that contains the grandchildren of the
 	 * original parent.
+	 *
+	 * @since 2.0.0
+	 *
+	 * @see IElementCollection::only()
 	 */
-	public function children(string $tag): IElementCollection;
+	public function children($tag = null): IElementCollection;
 }
