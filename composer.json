@@ -1,13 +1,12 @@
 {
     "name": "odepax/pasap",
-    "description": "PHP as a Preprocessor --- Another server side custom tags lib.",
+    "description": "PHP AS A Preprocessor --- Another server side custom tags lib.",
     "type": "library",
     "keywords": [
         "custom-tag", "custom-tags", "custom tag", "custom tags", "html", "parse", "parser"
     ],
     "require": {
-    	"php": "7.*.*",
-        "sgolemon/table-flip": "^1.0"
+    	"php": "7.*.*"
     },
     "require-dev": {
         "phpunit/phpunit": "^5.4"

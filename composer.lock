@@ -4,55 +4,9 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "c26bfac96708b12909407e119186f35e",
-    "content-hash": "1e88e2e30d4441005ee3920fbac829a2",
-    "packages": [
-        {
-            "name": "sgolemon/table-flip",
-            "version": "1.0.4",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/sgolemon/table-flip.git",
-                "reference": "8cf36c2f923ed3283303795debae9eebe96364d1"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/sgolemon/table-flip/zipball/8cf36c2f923ed3283303795debae9eebe96364d1",
-                "reference": "8cf36c2f923ed3283303795debae9eebe96364d1",
-                "shasum": ""
-            },
-            "require-dev": {
-                "phpunit/phpunit": "*"
-            },
-            "type": "library",
-            "autoload": {
-                "files": [
-                    "src/TableFlip.php"
-                ]
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "Public Domain"
-            ],
-            "authors": [
-                {
-                    "name": "Sara Golemon",
-                    "email": "pollita@php.net",
-                    "homepage": "https://twitter.com/SaraMG",
-                    "role": "Developer"
-                }
-            ],
-            "description": "Essential exception class needed by every good project.",
-            "homepage": "https://github.com/sgolemon/table-flip",
-            "keywords": [
-                "exception",
-                "fun",
-                "rage",
-                "table-flip"
-            ],
-            "time": "2016-06-01 18:46:13"
-        }
-    ],
+    "hash": "fac777deb61a759b5d7d16fe041b4d41",
+    "content-hash": "74df319038ad3d2ac0b04be63cfc7cbf",
+    "packages": [],
     "packages-dev": [
         {
             "name": "doctrine/instantiator",
@@ -604,16 +558,16 @@
         },
         {
             "name": "phpunit/phpunit",
-            "version": "5.4.6",
+            "version": "5.4.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/phpunit.git",
-                "reference": "2f1fc94b77ea6418bd6a06c64a1dac0645fbce59"
+                "reference": "6c8a756c17a1a92a066c99860eb57922e8b723da"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/2f1fc94b77ea6418bd6a06c64a1dac0645fbce59",
-                "reference": "2f1fc94b77ea6418bd6a06c64a1dac0645fbce59",
+                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/6c8a756c17a1a92a066c99860eb57922e8b723da",
+                "reference": "6c8a756c17a1a92a066c99860eb57922e8b723da",
                 "shasum": ""
             },
             "require": {
@@ -678,7 +632,7 @@
                 "testing",
                 "xunit"
             ],
-            "time": "2016-06-16 06:01:15"
+            "time": "2016-07-21 06:55:27"
         },
         {
             "name": "phpunit/phpunit-mock-objects",
