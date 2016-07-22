@@ -1,3 +1,0 @@
-<ul>
-	<?= $this->children() ?>
-</ul>
