@@ -1,18 +1,40 @@
 # Pasap
 
-Pasap stands for _Php AS A Preprocessor_. This is a library which provides server
-side custom tags with PHP.
+Pasap stands for _Php AS A Preprocessor_. This is a library which provides
+server side custom tags with PHP.
 
-Custom tags are used to improve code readability and make the HTML more meaningful.
+Custom tags are used to improve code readability and make the HTML more
+meaningful.
 
-## Usage
+Remember this **README is a memo**. Check the
+[wiki](https://github.com/Odepax/pasap/wiki) for detailed information about the
+library's functioning.
+
+## Install
+
+_Pasap_ is available as a
+[Composer package](https://packagist.org/packages/odepax/pasap). You can install
+it via the CLI:
+
+```bash
+composer require odepax/pasap
+```
+
+... or pasting this in your project's composer.json file:
+
+```json
+"require": {
+    "odepax/pasap": "^2.0"
+}
+```
+
+## Quick Start
 
 **STEP 1.**
 Create a classic PHP file. This file is supposed to generate HTML, with the only
 difference that there are custom tags in the generated HTML code.
 
 ```xml
-<!DOCTYPE html>
 <document title="I'm Using Custom Tags!">
 	<news title="Lorem Ipsum" author="Me, of course">
 		<p>Lorem ipsum <em>dolor</em> sit amet...</p>
@@ -53,20 +75,20 @@ Create a definition file for each custom tag you used. Here, you will create a
 ```
 
 **STEP 3.**
-Now let's configure and run Pasap parser:
+Now let's configure and run Pasap:
 
 ```php
 <?php
 
-require "./vendor/autoload.php";
+require './vendor/autoload.php';
 
 // Get generated HTML with custom tags as a string.
 ob_start();
-include 'pasap-document.php';
+include 'our-super-pasap-document.php';
 $htmlWithCustomTags = ob_get_clean();
 
 // Convert custom tags into valid HTML using the definition files.
-echo \Pasap\Pasap::parse($htmlWithCustomTags, "custom-tags");
+echo \Pasap\Pasap::parse($htmlWithCustomTags, 'custom-tags');
 ```
 
 **STEP 4.**
@@ -91,34 +113,60 @@ Admire the output:
 </html>
 ```
 
-## Documentation
+## Usage
 
-In a definition file, `$this` represents the custom element. `$this` is a
-`\Pasap\Element`. Here are the methods you can call:
+In a definition file, `$this` represents the custom element. Here are some
+methods you can call:
 
-- `$this->tag():string` returns the tag name of the custom element;
-- `$this->is($tag:string):bool` is a shortcut to `$this->tag() === $tag`;
-- `$this->attr($name:string):string` returns the value of the specified
-  attribute, or `NULL` of the attribute does not exist.
-- `$this->attr():\Pasap\AttrCollection` and `$this->children():\Pasap\ElementCollection`
-  return respectively all the attributes and all the child nodes of `$this`.
+```php
+$this->tag(); // string
 
-Since `\Pasap\AttrCollection` and `\Pasap\ElementCollection` implement a
-`__toString` method and the `\Iterator` interface, you can easily `echo` them or
-iterate through them with a `foreach($this->attr() as $name => $value)` and a
-`foreach($this->children() as $element)` respectively.
+$this->is('tag'); // boolean (compares with $this->tag())
+$this->is('#text'); // boolean
+$this->is('#comment'); // boolean
+$this->is('#cdata'); // boolean
+$this->is('#element'); // boolean
 
-Note that, like `$this`, `$element` is a `\Pasap\Element`, which means you can
-call `tag`, `is`, `attr`, and `children` methods on it.
+$this->parent(); // Element
 
-You can find detailed information about exposed objects and methods on the
-[wiki](https://github.com/Odepax/pasap/wiki).
+$this->children(); // ElementCollection
+$this->children('link'); // Shorcut for $this->children()->only('link')
+
+$this->attr(); // AttrCollection
+$this->attr('name'); // string | null
+$this->attr('name', 'fallback'); // string
+
+$this->data('key'); // mixed | null
+$this->data('key', 'fallback'); // mixed
+
+$this->scope('key'); // mixed | null
+$this->scope('key', 'fallback'); // mixed
+```
+
+Find more examples in the
+[tests folder](https://github.com/Odepax/pasap/tree/master/test/Parsing/parsed).
+
+_Pasap_ supports some configuration options. They are handled by the `Configure`
+static class:
+
+```php
+Configure::namespaceSource('', './element');
+Configure::namespaceSource('intuitive-form', './vendor/odepax/pasap-intuitive-form/element');
+
+Configure::nativeNamespace('html', [ 'br', 'hr', 'img', 'meta' ]);
+Configure::nativeNamespace('svg', [ 'path' ]);
+
+Configure::output(Configure::LEFT_AS_THIS | Configure::PRETTIFY | Configure::MINIFY);
+
+Configure::doctype(Configure::LEFT_AS_THIS | Configure::ALWAYS_HTML5);
+```
 
 ## Limitations
 
 **Limit 1.**
 You can't use custom tags in a definition file.
-However, it's still possible to use a custom tag as a child of another custom tag.
+However, it's still possible to use a custom tag as a child of another custom
+tag.
 
 **Limit 2.**
 This is XML, not HTML.
@@ -135,32 +183,9 @@ It means that even this is a valid **HTML5** code:
 tags: they must end with `/>`, so you' will need to turn your `<meta>` and
 `<input>` into `<meta/>` and `<input/>`.
 
+Even you are not contained by the `<html>` -- `<head>` -- `<body>` structure
+anymore, remember you can only have **one root element**.
+
 **Limit 3.**
 Since the custom tags are managed server side, your CSS and your JavaScript are
-not aware of them.
-
-## Functioning
-
-![With and Without Pasap](http://aygix.free.fr/down.php?path=github/Odepax/pasap/with-without.png)
-
-<!--
-      +~~~~~~~~~~~~~~~~~~~~+ <~~~~ Data from DB           +~~~~~~~~~~~~~~~~~~~+ <~~~~ Data from DB
-PHP { | HTML Preprocessing | <~~~~ Session          PHP { | XML Preprocessing | <~~~~ Session
-      +~~~~~~~~~~~~~~~~~~~~+ <~~~~ APIs                   +~~~~~~~~~~~~~~~~~~~+ <~~~~ APIs
-                |                                                  |
-                |                                                  v
-                |                                               +~~~~~+  <news title="Lorem">
-                |                                               | XML |     ...
-                |                                |              +~~~~~+  </news>
-                |                                |                 |
-                |                                |                 v
-                |                                |             +~~~~~~~+
-                |                                |             | Pasap | <~~~~ Custom elements
-                |                                              +~~~~~~~+
-                |                                                  |
-                v                                                  v      <article class="news">
-             +~~~~~~+                                           +~~~~~~+     <h1> Lorem </h1>
-             | HTML |                                           | HTML |     ...
-             +~~~~~~+                                           +~~~~~~+  </article>
-                                   Without Pasap    With Pasap
--->
+not aware of them. I'm working on it.
