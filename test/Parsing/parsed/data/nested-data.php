@@ -20,5 +20,11 @@
 		<group-scope <?= \Pasap\Pasap::scope([ 'two' => 2, 'three' => 3]) ?>>
 			<list-scope <?= \Pasap\Pasap::scope([ 'one' => 1, 'two' => 22 ]) ?> />
 		</group-scope>
+
+		<group-scope <?= \Pasap\Pasap::scope([ 'one' => 1]) ?>>
+			<group-scope <?= \Pasap\Pasap::scope([ 'two' => 2]) ?>>
+				<list-scope <?= \Pasap\Pasap::scope([ 'three' => 3 ]) ?> />
+			</group-scope>
+		</group-scope>
 	</body>
 </html>

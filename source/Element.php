@@ -425,9 +425,10 @@ class Element implements IElement
 	public function scope (string $key, $fallback = null)
 	{
 		if (!array_key_exists($key, $this->cache['scope'])) {
-			if (is_null($this->attr('pasap:scope'))) {
-				$this->cache['scope'][$key] = $fallback;
-			} else if (array_key_exists($key, $data = Pasap::getData($this->attr('pasap:scope')))) {
+			if (
+				   !is_null($this->attr('pasap:scope'))
+				&& array_key_exists($key, $data = Pasap::getData($this->attr('pasap:scope')))
+			) {
 				// Case 1: it's in our scope. Great, return it.
 				$this->cache['scope'][$key] = $data[$key];
 			} else {
