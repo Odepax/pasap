@@ -317,18 +317,18 @@ interface IElement
 	public function children ($tag = null);
 
 	/**
-	 * Gets the values of an attribute or the whole list of attributes of this
+	 * Gets the value of an attribute or the whole list of attributes of this
 	 * element.
 	 *
 	 * @param string|null $name
 	 * The full name of the attribute to look for.
 	 *
 	 * @param mixed $fallback
-	 * A fallback value. If the specified attribute does not exist,
-	 * then this value will be returned.
+	 * A fallback value. If the specified attribute does not exist, then this
+	 * value will be returned.
 	 *
 	 * @return mixed
-	 * Returns the values of the specified attribute (`string`).
+	 * Returns the value of the specified attribute (`string`).
 	 * Returns the specified fallback value (`mixed`) when the attribute does
 	 * not exist.
 	 * Returns the whole attribute collection (`IAttrCollection`) if called with
@@ -340,6 +340,32 @@ interface IElement
 	 * @see https://github.com/Odepax/pasap/wiki/Definition-Files#access-attributes-and-children-of-an-element
 	 */
 	public function attr ($name = null, $fallback = null);
+
+	/**
+	 * Gets the value of a boolean attribute of this element.
+	 *
+	 * `'false'`, `'off'`, `'no'`, `'n'`, `'f'`, `'0'` and `''` are considered
+	 * as `false`, ; other values are considered as `true`.
+	 * 
+	 * PS: It's case-insensitive.
+	 *
+	 * @param string $name
+	 * The full name of the attribute to look for.
+	 * 
+	 * @param bool $fallback
+	 * A fallback value. If the specified attribute does not exist, then this
+	 * value will be returned.
+	 *
+	 * @return bool
+	 * Returns the bool-converted value of the specified attribute.
+	 * Returns the specified fallback value (`bool`) when the attribute does
+	 * not exist.
+	 *
+	 * @since 2.0.0
+	 *
+	 * @see IElement::attr()
+	 */
+	public function attrAsBool (string $name, bool $fallback = false): bool;
 
 	/**
 	 * Gets the value of a data attached to this element.

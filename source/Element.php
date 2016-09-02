@@ -410,6 +410,29 @@ class Element implements IElement
 	}
 
 	/** @inheritDoc */
+	public function attrAsBool (string $name, bool $fallback = false): bool
+	{
+		if (is_null($value = $this->attr($name))) {
+			// The attribue does not exist.
+			return $fallback;
+		}
+
+		switch (strtolower($value)) {
+			case 'false':
+			case 'off':
+			case 'no':
+			case 'n':
+			case 'f':
+			case '0':
+			case '':
+				return false;
+			
+			default:
+				return true;
+		}
+	}
+
+	/** @inheritDoc */
 	public function data (string $key, $fallback = null)
 	{
 		if (is_null($this->attr('pasap:data'))) {
