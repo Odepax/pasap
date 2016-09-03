@@ -50,7 +50,7 @@ create a custom tag and use it as the root element of you document instead of
 Create a definition file for each custom tag you used. Here, you will create a
 `custom-tags/document.php` file:
 
-```php
+```xml
 <html lang="en">
 	<head>
 		<meta charset="UTF-8"/>
@@ -64,7 +64,7 @@ Create a definition file for each custom tag you used. Here, you will create a
 
 ... and a `custom-tags/news.php` file:
 
-```php
+```xml
 <article class="news">
 	<h1 class="news_title"><?= $this->attr('title') ?></h1>
 	<em class="news_author"><?= $this->attr('author') ?></em>
