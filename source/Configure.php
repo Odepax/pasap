@@ -161,6 +161,8 @@ abstract class Configure
 	 * - `Configure::MINIFY`: Extra spaces and comments are deleted.
 	 *
 	 * @since 2.0.0
+	 *
+	 * @see https://github.com/Odepax/pasap/wiki/Configuration#deal-with-output
 	 */
 	public static function output(int $mode)
 	{
@@ -187,6 +189,8 @@ abstract class Configure
 	 *   is created.
 	 *
 	 * @since 2.0.0
+	 *
+	 * @see https://github.com/Odepax/pasap/wiki/Configuration#doctype-handling
 	 */
 	public static function doctype(int $mode)
 	{
