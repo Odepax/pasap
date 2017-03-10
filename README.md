@@ -1,3 +1,5 @@
+![This composer package is no longer maintained](http://aygix.free.fr/down.php?path=github/Odepax/pasap/deprecated.png)
+
 # Pasap
 
 Pasap stands for _Php AS A Preprocessor_. This is a library which provides
