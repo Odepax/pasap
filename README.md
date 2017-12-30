@@ -1,4 +1,4 @@
-![This composer package is no longer maintained](https://drive.google.com/open?id=1B6ufo25gD1bIYXLM_TtFb3vi3HJca4c2)
+![This composer package is no longer maintained](https://lh6.googleusercontent.com/PlJHKpFYQGmwLYkBoKTOYVPYXn5TbUkKcFJ_0kSqRXQRy1weyoz1xPhwale7_5fwsm9ZPO-3w2c7KQ=w1920-h942)
 
 # Pasap
 
