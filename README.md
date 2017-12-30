@@ -1,4 +1,4 @@
-![This composer package is no longer maintained](https://lh6.googleusercontent.com/PlJHKpFYQGmwLYkBoKTOYVPYXn5TbUkKcFJ_0kSqRXQRy1weyoz1xPhwale7_5fwsm9ZPO-3w2c7KQ=w1920-h942)
+![This composer package is no longer maintained](http://aygix.free.fr/down.php?path=github/Odepax/pasap/deprecated.png)
 
 # Pasap
 
